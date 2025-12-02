@@ -35,19 +35,19 @@ def main():
         # intro from content/intro.md
         intro("content/intro.md")
 
-        st.success(
-            """
-#### Novidade importante:
+        #         st.success(
+        #             """
+        # #### Novidade importante:
 
-O MIMI@UF tem tido actualizações importantes no seu interface na visão de relatlório. A Lupa desapareceu, mas a sua funcionalidade não foi removida como se pensava inicialemnte.
+        # O MIMI@UF tem tido actualizações importantes no seu interface na visão de relatlório. A Lupa desapareceu, mas a sua funcionalidade não foi removida como se pensava inicialemnte.
 
-Neste momento é possivel **transformar um filtro numa coluna na tabela arrastando este filtro para a tabela na zona de colunas** (drag-and-drop). Assim deixa de ser necessário exportar um relatório por médico e é possível ter todos os médicos num único relatório novamente! Esta interface é muito melhor e mais intuitiva que a Lupa.
+        # Neste momento é possivel **transformar um filtro numa coluna na tabela arrastando este filtro para a tabela na zona de colunas** (drag-and-drop). Assim deixa de ser necessário exportar um relatório por médico e é possível ter todos os médicos num único relatório novamente! Esta interface é muito melhor e mais intuitiva que a Lupa.
 
-Agradeço aos colegas Riquen Mulji - USF Dona Amelia de Portugal - e Monica Albino - USF Amato Lusitano - por me terem alertado para esta nova funcionalidade.
+        # Agradeço aos colegas Riquen Mulji - USF Dona Amelia de Portugal - e Monica Albino - USF Amato Lusitano - por me terem alertado para esta nova funcionalidade.
 
-Irei actualizar o tutorial brevemente com esta informação (se não existirem novas alterações no MIM@UF entretanto)
-"""
-        )
+        # Irei actualizar o tutorial brevemente com esta informação (se não existirem novas alterações no MIM@UF entretanto)
+        # """
+        #         )
 
         # novidades from content/novidades.csv
         # it picks the most recent one

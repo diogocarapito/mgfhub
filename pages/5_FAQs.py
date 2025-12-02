@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.style import page_config, main_title, em_desenvolvimento, bottom_suport_email
-from ui.tutorial import tutorial_bicsp, tutorial_mimuf, tutorial_mimuf_antigo
+from ui.tutorial import tutorial_bicsp, tutorial_mimuf_depois_11_2025#, tutorial_mimuf, tutorial_mimuf_antigo
 
 page_config()
 
@@ -13,17 +13,20 @@ tab_mgfhub, tab_indicadores = st.tabs(["Sobre o mgfhub", "Sobre os Indicadores"]
 with tab_mgfhub:
     selection = st.radio(
         "Escolha o tutorial",
-        ["BI-CSP", "MIM@UF depois 10/2025", "MIM@UF antes 09-2025"],
+        #["BI-CSP", "MIM@UF depois 10/2025", "MIM@UF antes 09-2025"],
+        ["BI-CSP", "MIM@UF depois 11/2025"],
         horizontal=True,
     )
 
     if selection == "BI-CSP":
         tutorial_bicsp()
-    elif selection == "MIM@UF depois 10/2025":
-        tutorial_mimuf()
+    # elif selection == "MIM@UF depois 10/2025":
+    #     tutorial_mimuf()
 
-    elif selection == "MIM@UF antes 09-2025":
-        tutorial_mimuf_antigo()
+    # elif selection == "MIM@UF antes 09-2025":
+    #     tutorial_mimuf_antigo()
+    elif selection == "MIM@UF depois 11/2025":
+        tutorial_mimuf_depois_11_2025()
 
 with tab_indicadores:
     em_desenvolvimento()
