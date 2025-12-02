@@ -34,3 +34,4 @@ version,date,text
 2.13.0,2025-10-03,"Novo workflow para extrair dados do MIM@UF (depois de 10/2025) - já não é possível transformar o filtro Médico Familia em coluna, pelo que é necessário fazer a extração por cada médico, sendo que a junção dos dados é feita automaticamente pelo mgfhub. Ver tutorial atualizado na secção de FAQs"
 2.13.1,2025-10-06,"Pequenas correções no novo tutorial do MIM@UF - mantém-se a necessidade de ir à planilha corrigir as linhas unificadas"
 2.13.2,2025-11-04,"Função de Lupa do MIMUF foi substituida por Drag-and-drop de filtros para colunas. Já não há necessidade de extrair 1 folha por médico!"
+2.13.3,2025-12-02,"Removida função de análise a partir da extração com apenas 1 médico, visto que o drag-and-drop de filtros para colunas permite extrair todos os médicos de uma só vez. Correção de bug na leitura de ficheiros Excel com vários médicos. Tutorial MIM@UF atualizado."

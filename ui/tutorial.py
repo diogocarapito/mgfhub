@@ -67,6 +67,90 @@ def tutorial_bicsp():
 
 
 @st.cache_data()
+def tutorial_mimuf_depois_11_2025():
+    tutorial = [
+        {
+            "texto": "##### 1. Abrir o MIM@UF e fazer login",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_1.png",
+        },
+        {
+            "texto": "##### 2. Navegar para a pasta Indicadores",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_2.png",
+        },
+        {
+            "texto": "##### 3. Pasta P02.01. Indicadores USF/UCSP'",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_3.png",
+        },
+        {
+            "texto": "##### 4. Selecionar o relatório P02_01_R03. Indicadores por lista de utentes de médico",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_4.png",
+        },
+        # {
+        #     "texto": "##### 5. ...",
+        #     "imagem": "content/tutorial_mimuf/tutorial_mimuf_5.png",
+        # },
+        {
+            "texto": "##### 5. Selecionar o Mês de Analise e o Ano de Contratualização e depois Executar Relatório",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_6.png",
+        },
+        {
+            "texto": "##### 6. Executar Relatório",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_7.png",
+        },
+        {
+            "texto": "##### 7. Vão ser necessários vários passos intermédios antes de exportar a tabela",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_8.png",
+        },
+        {
+            "texto": "##### 8. Mudar para indicador Flutuante",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_9.png",
+        },
+        {
+            "texto": "##### 9. Transformar o filtro Médico Familia para uma coluna na tabela, arrastando o filtro para a zona de colunas (drag-and-drop)",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_8_11_2025.png",
+        },
+        # {
+        #     "texto": "##### 9. Transformar o filtro Médico Familia para uma coluna na tabela, passando com rato entre as duas colunas e clicar na lupa",
+        #     "imagem": "content/tutorial_mimuf/tutorial_mimuf_10.png",
+        # },
+        # {
+        #     "texto": "##### 10. Escrever Méd e selecionar Médico Familia",
+        #     "imagem": "content/tutorial_mimuf/tutorial_mimuf_11.png",
+        # },
+        {
+            "texto": "##### 10. Corrigir as linhas unificadas na Planilha e depois butão com colunas a amarelo",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_12_NOVO.png",
+        },
+        {
+            "texto": "##### 11. Voltar ao Home e clicar no botão Exportar",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_13.png",
+        },
+        {
+            "texto": '##### 12. Selecionar Excel com texto simples; MANTER ☑️ do "Exportar título do relatório"; MANTER ☑️ do "Exportar Informações de Pagina Por"; MANTER ☑️ do "Exportar detalhes do filtro"; Clicar em Exportar (permite incluir informação do médico para depois construir a equipa completa)',
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_14_NOVO.png",
+        },
+        {
+            "texto": "##### 13. Abrir ficheiro no Excel",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_15.png",
+        },
+        {
+            "texto": "##### 14. Exportar como Livro",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_16.png",
+        },
+        {
+            "texto": "##### 15. Fazer o upload do ficheiro para o mgfhub",
+            "imagem": "content/tutorial_mimuf/tutorial_mimuf_17.png",
+        },
+    ]
+
+    st.success(
+        "O tutorial do MIM@UF depois de Novembro de 2025 já inclui a funcionalidade de drag-and-drop de filtros para colunas, pelo que não é necessário fazer upload de ficheiros com apenas 1 médico. Basta extrair todos os médicos como dantes. Pode ser necessário corrigir algumas linhas unificadas na folha de cálculo, conforme explicado no tutorial."
+    )
+    
+    tutorial_expander(tutorial)
+    
+    
+@st.cache_data()
 def tutorial_mimuf():
     tutorial = [
         {

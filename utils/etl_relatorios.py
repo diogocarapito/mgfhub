@@ -455,6 +455,7 @@ def split_metadata_from_df(df, df_start):
 
     # make row 0 index
     def prepare_row_to_column(row):
+
         # look at this row and if there are duplicate column names, add  .1, .2, .3, etc to the duplicates
 
         counts = {}
@@ -488,14 +489,17 @@ def split_metadata_from_df(df, df_start):
         if each.startswith("Médico Familia:"):
             medico_familia = each.split("Médico Familia: ")[1].strip()
 
-            break
+            # add a new column titled Médico Familia and fill it with the value of medico_familia except for row 0
 
-    # add a new column titled Médico Familia and fill it with the value of medico_familia except for row 0
-    df.loc[1:, "Médico Familia"] = medico_familia
-    cols = df.columns.tolist()
-    cols.remove("Médico Familia")
-    cols.insert(4, "Médico Familia")  # Change 1 to your desired position (0-based)
-    df = df[cols]
+            df.loc[1:, "Médico Familia"] = medico_familia
+            cols = df.columns.tolist()
+            cols.remove("Médico Familia")
+            cols.insert(
+                4, "Médico Familia"
+            )  # Change 1 to your desired position (0-based)
+            df = df[cols]
+
+            break
 
     return df
 
