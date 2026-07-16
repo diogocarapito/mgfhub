@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}mgfhub{% endblock %}</title>
+    <link rel="icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="/static/vendor/pico.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/vendor/htmx.min.js" defer></script>
+</head>
+<body>
+<header class="container">
+    <nav>
+        <ul>
+            <li><a href="/" class="marca"><strong>mgfhub</strong></a></li>
+        </ul>
+        <ul>
+            <li><a href="/indicadores">Indicadores</a></li>
+        </ul>
+    </nav>
+</header>
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+<footer class="container">
+    <small>
+        Encontraste algum erro ou tens alguma sugestão?
+        <a href="mailto:mgfhub.suporte@gmail.com">mgfhub.suporte@gmail.com</a>
+    </small>
+</footer>
+</body>
+</html>

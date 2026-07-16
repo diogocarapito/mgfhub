@@ -1,0 +1,67 @@
+<div id="resultados">
+    <p class="contagem"><strong>{{ num }}</strong> indicadores</p>
+
+    {% if num == 0 %}
+    <article class="aviso">Nenhum indicador encontrado</article>
+
+    {% elif vista == "tabela" %}
+    <div class="tabela-scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>id</th>
+                <th>Link</th>
+                <th>Nome abreviado</th>
+                <th>Área clínica</th>
+                <th>Aceitável 2023</th>
+                <th>Esperado 2023</th>
+                <th>Aceitável 2024</th>
+                <th>Esperado 2024</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row["id"] }}</td>
+                <td><a href="{{ row["link_sdm"] }}" target="_blank" rel="noopener">SDM</a></td>
+                <td>{{ row["Nome abreviado"] }}</td>
+                <td>{{ row["Área clínica"] }}</td>
+                <td>{{ row["Intervalo Aceitável 2023"] }}</td>
+                <td>{{ row["Intervalo Esperado 2023"] }}</td>
+                <td>{{ row["Intervalo Aceitável 2024"] }}</td>
+                <td>{{ row["Intervalo Esperado 2024"] }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    {% for row in rows %}
+    <article class="cartao-indicador">
+        <div class="cartao-grid">
+            <div>
+                <a class="id-link" href="{{ row["link_sdm"] }}" target="_blank" rel="noopener">{{ row["id"] }}</a>
+            </div>
+            <div>
+                <h4>{{ row["Designação"] }}</h4>
+                <dl>
+                    <dt>Área clínica</dt>
+                    <dd>{{ row["Área clínica"] }}</dd>
+                    <dt>Descrição</dt>
+                    <dd>{{ row["Descrição do Indicador"] }}</dd>
+                    <dt>Intervalo Aceitável</dt>
+                    <dd>{{ row["Intervalo Aceitável"] }}</dd>
+                    <dt>Intervalo Esperado</dt>
+                    <dd>{{ row["Intervalo Esperado"] }}</dd>
+                </dl>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+    {% endif %}
+</div>
+
+{% if oob %}
+{% include "partials/select_areas.html" %}
+{% endif %}

@@ -1,0 +1,80 @@
+/* mgfhub v3 — estilos próprios por cima do pico.css */
+
+.marca {
+    text-decoration: none;
+    font-size: 1.3rem;
+}
+
+.cartoes-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1rem;
+}
+
+.tag {
+    font-size: 0.7rem;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .filtros-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.contagem {
+    margin: 0.5rem 0 1rem 0;
+}
+
+.cartao-indicador {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.cartao-grid {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1rem;
+}
+
+.id-link {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.cartao-indicador h4 {
+    margin-bottom: 0.5rem;
+}
+
+.cartao-indicador dl {
+    margin: 0;
+}
+
+.cartao-indicador dt {
+    font-weight: 600;
+    margin-top: 0.4rem;
+}
+
+.cartao-indicador dd {
+    margin-left: 0;
+    font-size: 0.9rem;
+    /* descrições e intervalos trazem quebras de linha significativas */
+    white-space: pre-line;
+}
+
+.tabela-scroll {
+    overflow-x: auto;
+}
+
+.aviso {
+    text-align: center;
+}

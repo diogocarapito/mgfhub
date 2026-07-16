@@ -1,0 +1,7 @@
+<select name="area" id="filtro-areas" multiple size="4"
+        aria-label="Filtro por área clínica"
+        {% if oob %}hx-swap-oob="true"{% endif %}>
+    {% for opcao in opcoes_area %}
+    <option value="{{ opcao }}" {% if opcao in area %}selected{% endif %}>{{ opcao }}</option>
+    {% endfor %}
+</select>

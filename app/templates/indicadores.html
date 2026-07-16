@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Indicadores — mgfhub{% endblock %}
+
+{% block content %}
+<h1>Indicadores</h1>
+
+<form id="pesquisa-form"
+      hx-get="/indicadores"
+      hx-target="#resultados"
+      hx-swap="outerHTML"
+      hx-trigger="input delay:300ms"
+      hx-sync="this:replace"
+      hx-push-url="true">
+
+    <input type="search" name="pesquisa" value="{{ pesquisa }}"
+           placeholder="Pesquisa por nome, código ou conjunto de palavras"
+           aria-label="Pesquisa de indicadores" autocomplete="off">
+
+    <div class="filtros-grid">
+        <fieldset>
+            <legend><strong>Contratualização</strong></legend>
+            {% for opcao in filtros_opcoes %}
+            <label>
+                <input type="radio" name="filtros" value="{{ opcao }}"
+                       {% if filtros == opcao %}checked{% endif %}>
+                {{ opcao }}
+            </label>
+            {% endfor %}
+        </fieldset>
+
+        <fieldset>
+            <legend><strong>Área clínica</strong></legend>
+            {% include "partials/select_areas.html" %}
+        </fieldset>
+
+        <fieldset>
+            <legend><strong>Vista</strong></legend>
+            <label>
+                <input type="radio" name="vista" value="cartoes"
+                       {% if vista == "cartoes" %}checked{% endif %}>
+                Cartões
+            </label>
+            <label>
+                <input type="radio" name="vista" value="tabela"
+                       {% if vista == "tabela" %}checked{% endif %}>
+                Tabela
+            </label>
+        </fieldset>
+    </div>
+</form>
+
+{% include "partials/indicadores_resultados.html" %}
+{% endblock %}

@@ -15,6 +15,16 @@ streamlit==1.51.0
 watchdog==4.0.0
 h11==0.14.0
 
+# Web framework v3 (FastAPI + htmx)
+fastapi==0.139.2
+uvicorn[standard]==0.51.0
+jinja2==3.1.6
+python-multipart==0.0.32
+httpx==0.24.1
+# nota: o pip avisa que uvicorn puxa websockets>=13 e o supabase==2.0.3 pede <13;
+# é inofensivo — só usamos inserts (sem realtime), e o supabase sai do stack
+# quando a v3 passar a SQLite
+
 # Data manipulation and visualization libraries
 numpy==2.3.4
 pandas==2.3.3

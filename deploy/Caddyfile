@@ -1,0 +1,7 @@
+mgfhub.com, www.mgfhub.com {
+	reverse_proxy mgfhub-streamlit:8501
+}
+
+beta.mgfhub.com {
+	reverse_proxy mgfhub-v3:8000
+}

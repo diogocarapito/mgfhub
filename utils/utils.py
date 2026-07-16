@@ -1,8 +1,8 @@
 import pandas as pd
 import os
-from unidecode import unidecode
-from rapidfuzz import process, fuzz
 import streamlit as st
+
+from core.search import filter_indicadores
 
 
 def func():
@@ -28,37 +28,8 @@ def data_source(source):
 
 @st.cache_data
 def filter_df(df, pesquisa, filtros, area_clinica):
-    if filtros == "IDE":
-        df = df[df["ide"] == 1]
-
-    elif filtros == "IDG":
-        df = df[df["idg"] == 1]
-
-    elif filtros == "BI-CSP":
-        df = df[df["bicsp"] == 1]
-
-    else:
-        pass
-
-    if area_clinica:
-        df = df[df["Área clínica"].isin(area_clinica)]
-
-    pesquisa = unidecode(pesquisa.lower())
-
-    if pesquisa == "":
-        return df
-    else:
-        # fuzzy search com score cutoff de 59, comparando com indexing
-        search_list = process.extract(
-            pesquisa,
-            df["search_indexes"],
-            scorer=fuzz.WRatio,
-            score_cutoff=59,
-            limit=50,
-        )
-        df = df.filter([id[2] for id in search_list], axis=0)
-
-        return df
+    # a lógica de pesquisa vive em core.search (partilhada com a app v3)
+    return filter_indicadores(df, pesquisa, filtros, area_clinica)
 
 
 @st.cache_data

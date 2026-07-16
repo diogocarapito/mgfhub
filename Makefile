@@ -9,7 +9,7 @@
 BIN = $(wildcard .venv/bin/)
 
 .DEFAULT_GOAL := help
-.PHONY: help venv install run test test-cov lint format check clean \
+.PHONY: help venv install run run-v3 test test-cov lint format check clean \
 	docker-build docker-run docker-test docker
 
 help:  ## mostra esta ajuda
@@ -27,14 +27,17 @@ install:  ## instala dependências no ambiente ativo (usado no CI)
 run:  ## corre a app Streamlit em http://localhost:8501
 	$(BIN)streamlit run mgfhub.py
 
+run-v3:  ## corre a app FastAPI v3 (htmx) em http://localhost:8000
+	$(BIN)uvicorn app.main:app --reload --port 8000
+
 test:  ## corre os testes
 	$(BIN)pytest tests/
 
 test-cov:  ## testes com relatório de cobertura detalhado
-	$(BIN)pytest -vv --cov=mgfhub --cov=core --cov=utils --cov=pages tests/ --cov-report term-missing
+	$(BIN)pytest -vv --cov=mgfhub --cov=core --cov=app --cov=utils --cov=pages tests/ --cov-report term-missing
 
 lint:  ## pylint sobre todo o código
-	$(BIN)pylint --disable=R,C,W0622 *.py core/*.py monitor/*.py ui/*.py scripts/*.py utils/*.py pages/*.py tests/*.py
+	$(BIN)pylint --disable=R,C,W0622 *.py core/*.py app/*.py app/routers/*.py monitor/*.py ui/*.py scripts/*.py utils/*.py pages/*.py tests/*.py
 
 format:  ## formata o código com black
 	$(BIN)black .

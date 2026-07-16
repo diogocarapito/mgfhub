@@ -18,6 +18,11 @@ def load_portaria_sunburst() -> pd.DataFrame:
     return pd.read_csv(DATA_DIR / "sunburst_portaria_411a_2023.csv")
 
 
+def load_indicadores() -> pd.DataFrame:
+    """Dataset SDM completo dos indicadores (pesquisa, cartões, tabela)."""
+    return pd.read_csv(DATA_DIR / "indicadores_sdm_complete.csv", index_col=0)
+
+
 def load_intervalos(ano) -> pd.DataFrame:
     """Intervalos aceitáveis/esperados dos indicadores IDE para um ano.
 

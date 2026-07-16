@@ -1,0 +1,22 @@
+# mgfhub v3 — FastAPI + htmx
+#
+# build:  docker build -f Dockerfile.v3 -t mgfhub-v3 .
+# run:    docker run --rm -p 8000:8000 mgfhub-v3
+#
+# nota: usa o requirements.txt partilhado com a app Streamlit durante a
+# transição; quando a Streamlit for desligada, os requirements encolhem.
+
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')" || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

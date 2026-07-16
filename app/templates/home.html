@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<hgroup>
+    <h1>mgfhub</h1>
+    <p>Ferramenta de pesquisa e análise de indicadores dos Cuidados de Saúde Primários portugueses</p>
+</hgroup>
+
+<div class="cartoes-home">
+    {% for cartao in cartoes %}
+    <article>
+        <header>
+            <strong>{{ cartao.icon }} {{ cartao.titulo }}</strong>
+            {% if cartao.em_construcao %}<mark class="tag">em construção</mark>{% endif %}
+            {% if not cartao.rota and not cartao.em_construcao %}<mark class="tag">brevemente na v3</mark>{% endif %}
+        </header>
+        <p>{{ cartao.texto }}</p>
+        {% if cartao.rota %}
+        <a href="{{ cartao.rota }}" role="button">Abrir</a>
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

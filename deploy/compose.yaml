@@ -1,0 +1,44 @@
+# Deploy no VPS durante a transição: as duas apps lado a lado atrás do Caddy.
+#
+#   mgfhub.com       → app Streamlit atual (porta interna 8501)
+#   beta.mgfhub.com  → app FastAPI v3     (porta interna 8000)
+#
+# No VPS (com os registos DNS de mgfhub.com e beta.mgfhub.com a apontar
+# para o servidor):
+#   cd deploy && docker compose up -d --build
+#
+# O Caddy trata dos certificados HTTPS automaticamente (Let's Encrypt).
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - mgfhub-streamlit
+      - mgfhub-v3
+
+  mgfhub-streamlit:
+    build:
+      context: ..
+    restart: unless-stopped
+    # credenciais supabase da telemetria (opcional; sem elas a app funciona
+    # na mesma, só não regista utilização)
+    env_file:
+      - ../.env
+
+  mgfhub-v3:
+    build:
+      context: ..
+      dockerfile: Dockerfile.v3
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
