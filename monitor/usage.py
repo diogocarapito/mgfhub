@@ -4,20 +4,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-from datetime import datetime
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-import json
-import altair as alt
 
 
 def fetch_all_rows(table_name, chunk_size=1000):
     # load .env file
     load_dotenv()
-
-    # key to know the local of the code being run
-    production = os.environ.get("PRODUCTION")
 
     # Supabase configuration
     url: str = os.environ.get("SUPABASE_URL")
@@ -150,9 +144,7 @@ df_queries["yearmonth"] = (
 )
 df_queries["day"] = df_queries["created_at"].dt.day
 
-df_queries_last_6_months = df_queries_last_6_months[
-    df_queries_last_6_months["year"] >= 2024
-]
+df_queries_last_6_months = df_queries[df_queries["year"] >= 2024]
 
 
 # drop any row with area_clinica = []

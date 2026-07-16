@@ -5,41 +5,7 @@ import math
 
 # from mimufs.processing import medico
 
-import os
-from dotenv import load_dotenv
-from supabase import create_client, Client
-from datetime import datetime
-
-# load .env file
-load_dotenv()
-
-# key to know the local of the code being run
-production = os.environ.get("PRODUCTION")
-
-# Supabase configuration
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
-
-
-# Function to insert data into Supabase
-@st.cache_data()
-def supabase_record(unidade, ano, mes, tipo):
-    # Get current datetime
-    date_time = datetime.now().isoformat()
-
-    # Create the data in a format to be inserted into Supabase
-    sb_insert = {
-        "created_at": date_time,
-        "unidade": unidade,
-        "ano": ano,
-        "mes": mes,
-        "tipo": tipo,
-        # "production": bool(environment),
-    }
-
-    # Insert data into Supabase
-    supabase.table("ide_uploads").insert(sb_insert).execute()
+from monitor.telemetry import record_upload
 
 
 # From mimufs
@@ -322,14 +288,14 @@ def etl_bicsp(list_of_files):
             )
         else:
             dict_dfs[nome] = {
-                "data": df,
+                "df": df,
                 "ano": ano,
                 "mes": mes,
                 "unidade": unidade,
                 "nome": nome,
             }
 
-        supabase_record(unidade, ano, mes, "bicsp")
+        record_upload(unidade, ano, mes, "bicsp")
 
     return dict_dfs
 
@@ -760,7 +726,7 @@ def etl_mimuf(list_of_files):
                 "nome": nome,
             }
 
-        supabase_record(unidade, ano, mes, "mimuf")
+        record_upload(unidade, ano, mes, "mimuf")
 
     return dict_dfs
 

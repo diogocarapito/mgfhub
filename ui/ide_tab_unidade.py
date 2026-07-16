@@ -72,7 +72,7 @@ def tab_visao_unidade(df_bicsp):
         with space_2:
             st.empty()
         # get the unique values of "Área clínica" from the dataframe
-        areas_clinicas = extracao_areas_clinicas(df_bicsp[escolha]["data"])
+        areas_clinicas = extracao_areas_clinicas(df_bicsp[escolha]["df"])
 
         with col_2_filter_1:
             # selectbox for the "Área clínica"
@@ -99,27 +99,27 @@ def tab_visao_unidade(df_bicsp):
 
         for key, value in df_bicsp.items():
             # make Score None if score not in the range
-            mask_range = (value["data"]["Score"] < score_range[0]) | (
-                value["data"]["Score"] > score_range[1]
+            mask_range = (value["df"]["Score"] < score_range[0]) | (
+                value["df"]["Score"] > score_range[1]
             )
-            value["data"].loc[mask_range, "Score"] = None
+            value["df"].loc[mask_range, "Score"] = None
 
-            mask_poderacao = (value["data"]["Ponderação"] < ponderacao_range[0]) | (
-                value["data"]["Ponderação"] > ponderacao_range[1]
+            mask_poderacao = (value["df"]["Ponderação"] < ponderacao_range[0]) | (
+                value["df"]["Ponderação"] > ponderacao_range[1]
             )
-            value["data"].loc[mask_poderacao, "Score"] = None
+            value["df"].loc[mask_poderacao, "Score"] = None
 
             if selected_areas:
                 # substitute the value in "Score" to None if the "Área clínica" is not in the selected_areas
-                mask = value["data"]["Área clínica"].isin(selected_areas)
-                value["data"].loc[~mask, "Score"] = None
+                mask = value["df"]["Área clínica"].isin(selected_areas)
+                value["df"].loc[~mask, "Score"] = None
 
             # update df_bicso with the new value
             df_bicsp[key] = value
 
     # processamento do dataframe
     df_sunburst = merge_portaria_bicsp(
-        df_bicsp[escolha]["data"],
+        df_bicsp[escolha]["df"],
         df_bicsp[escolha]["ano"],
     )
 
@@ -219,7 +219,7 @@ def tab_visao_unidade(df_bicsp):
             )
 
         df_sunburst_2 = merge_portaria_bicsp(
-            df_bicsp[escolha_2]["data"],
+            df_bicsp[escolha_2]["df"],
             df_bicsp[escolha_2]["ano"],
         )
 
@@ -269,7 +269,7 @@ def tab_visao_unidade(df_bicsp):
                 escolha_2 = st.selectbox("Escolha o 2º gráfico", df_bicsp, index=1)
 
             df_sunburst_2 = merge_portaria_bicsp(
-                df_bicsp[escolha_2]["data"],
+                df_bicsp[escolha_2]["df"],
                 df_bicsp[escolha_2]["ano"],
             )
 

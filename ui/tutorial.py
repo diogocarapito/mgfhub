@@ -146,10 +146,10 @@ def tutorial_mimuf_depois_11_2025():
     st.success(
         "O tutorial do MIM@UF depois de Novembro de 2025 já inclui a funcionalidade de drag-and-drop de filtros para colunas, pelo que não é necessário fazer upload de ficheiros com apenas 1 médico. Basta extrair todos os médicos como dantes. Pode ser necessário corrigir algumas linhas unificadas na folha de cálculo, conforme explicado no tutorial."
     )
-    
+
     tutorial_expander(tutorial)
-    
-    
+
+
 @st.cache_data()
 def tutorial_mimuf():
     tutorial = [
