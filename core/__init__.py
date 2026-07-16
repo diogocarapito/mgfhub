@@ -15,11 +15,10 @@ from core.indicators import (
     process_filter_temporal,
     process_indicador,
 )
-from core.reference import DATA_DIR, load_portaria_sunburst
+from core.reference import DATA_DIR, load_intervalos, load_portaria_sunburst
 from core.scoring import (
     calculate_score_bicsp,
     calculate_score_mimuf,
-    etiqueta_ano,
     merge_portaria_bicsp,
 )
 
@@ -27,11 +26,11 @@ __all__ = [
     "DATA_DIR",
     "calculate_score_bicsp",
     "calculate_score_mimuf",
-    "etiqueta_ano",
     "etl_bicsp",
     "etl_mimuf",
     "extracao_areas_clinicas",
     "extrair_id",
+    "load_intervalos",
     "load_portaria_sunburst",
     "localizacao_coluna_medico",
     "medico",

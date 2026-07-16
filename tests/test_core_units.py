@@ -6,8 +6,8 @@ import pytest
 from core import (
     calculate_score_bicsp,
     calculate_score_mimuf,
-    etiqueta_ano,
     extrair_id,
+    load_intervalos,
     medico,
     split_metadata_from_df,
 )
@@ -80,11 +80,20 @@ def test_split_metadata_keyword_em_falta():
         split_metadata_from_df(df, "Unidade Funcional / Polo Hospitalar")
 
 
-def test_etiqueta_ano_hardcoded_2024():
-    # comportamento atual: devolve sempre as etiquetas de 2024,
-    # independentemente do ano pedido (a tornar data-driven)
-    df = pd.DataFrame(columns=["Intervalo Aceitável 2024", "Intervalo Esperado 2024"])
-    assert etiqueta_ano(df, 2023) == (
-        "Intervalo Aceitável 2024",
-        "Intervalo Esperado 2024",
-    )
+def _min_aceitavel_294(df):
+    return df.loc[df["id"] == 294, "Mínimo Aceitável"].iloc[0]
+
+
+def test_load_intervalos_por_ano():
+    # o indicador 294 tem intervalos diferentes em 2023 e 2024
+    assert _min_aceitavel_294(load_intervalos(2023)) == 300.0
+    assert _min_aceitavel_294(load_intervalos(2024)) == 150.0
+
+
+def test_load_intervalos_fallback():
+    # ano futuro sem intervalos publicados → usa o mais recente disponível
+    assert _min_aceitavel_294(load_intervalos(2025)) == 150.0
+    # ano anterior a todos os disponíveis → usa o mais antigo
+    assert _min_aceitavel_294(load_intervalos(2022)) == 300.0
+    # o ETL passa o ano como string
+    assert _min_aceitavel_294(load_intervalos("2025")) == 150.0

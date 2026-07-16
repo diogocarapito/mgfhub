@@ -9,8 +9,8 @@ da portaria.
 import pandas as pd
 
 from core.common import extrair_id, medico
-from core.reference import load_portaria_sunburst
-from core.scoring import calculate_score_mimuf, etiqueta_ano
+from core.reference import load_intervalos, load_portaria_sunburst
+from core.scoring import calculate_score_mimuf
 
 
 def localizacao_coluna_medico(df):
@@ -189,7 +189,8 @@ def etl_mimuf(list_of_files, on_upload=None, on_warning=None):
         # make id the index
         df = df.set_index("id")
 
-        # get sunburst_portaria csv
+        # estrutura da portaria + intervalos do ano dos dados
+        # (com fallback para o ano disponível mais próximo)
         df_portaria = load_portaria_sunburst()
 
         colunas_portaria = [
@@ -198,12 +199,6 @@ def etl_mimuf(list_of_files, on_upload=None, on_warning=None):
             "Dimensão",
             "Ponderação",
             "Lable",
-            "Intervalo Esperado 2024",
-            "Intervalo Aceitável 2024",
-            "Mínimo Aceitável 2024",
-            "Máximo Aceitável 2024",
-            "Mínimo Esperado 2024",
-            "Máximo Esperado 2024",
         ]
 
         # merge df with df_portaria
@@ -213,16 +208,10 @@ def etl_mimuf(list_of_files, on_upload=None, on_warning=None):
             how="left",
         )
 
-        df.rename(
-            columns={
-                "Intervalo Aceitável 2024": "Intervalo Aceitável",
-                "Mínimo Aceitável 2024": "Mínimo Aceitável",
-                "Máximo Aceitável 2024": "Máximo Aceitável",
-                "Intervalo Esperado 2024": "Intervalo Esperado",
-                "Mínimo Esperado 2024": "Mínimo Esperado",
-                "Máximo Esperado 2024": "Máximo Esperado",
-            },
-            inplace=True,
+        df = df.merge(
+            load_intervalos(ano),
+            on="id",
+            how="left",
         )
 
         df = df.reset_index(drop=True)
@@ -284,11 +273,10 @@ def etl_mimuf(list_of_files, on_upload=None, on_warning=None):
         )
 
         # apagar intervalos que não fazem sentido
-        int_aceit, int_esper = etiqueta_ano(df, ano)
-        df.loc[df["Dimensão"] == "IDE", int_aceit] = "N/A"
-        df.loc[df["Dimensão"] == "IDE", int_esper] = "N/A"
-        df.loc[df["Nome"] == "IDE", int_aceit] = "N/A"
-        df.loc[df["Nome"] == "IDE", int_esper] = "N/A"
+        df.loc[df["Dimensão"] == "IDE", "Intervalo Aceitável"] = "N/A"
+        df.loc[df["Dimensão"] == "IDE", "Intervalo Esperado"] = "N/A"
+        df.loc[df["Nome"] == "IDE", "Intervalo Aceitável"] = "N/A"
+        df.loc[df["Nome"] == "IDE", "Intervalo Esperado"] = "N/A"
 
         # IDE
         df.loc[df["Nome"] == "IDE", "Resultado"] = df.loc[

@@ -1,8 +1,9 @@
 """Captura os outputs golden-master do ETL a partir dos fixtures sintéticos.
 
 Os goldens foram capturados originalmente com a implementação pré-refactor
-(ainda em utils/etl_relatorios.py, commit "Fix known bugs") e servem de
-contrato: o package core/ tem de produzir exatamente os mesmos outputs.
+(utils/etl_relatorios.py, commit "Fix known bugs") e recapturados quando os
+intervalos passaram a ser data-driven por ano (data/intervalos_ide.csv) —
+ver a mensagem desse commit para o diff de comportamento.
 
 Só deve ser re-executado quando uma mudança de comportamento é DELIBERADA;
 nesse caso, rever o diff dos goldens e explicar a mudança no commit.

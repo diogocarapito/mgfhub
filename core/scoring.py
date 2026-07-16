@@ -8,25 +8,7 @@ Score por indicador (0-2):
 
 import pandas as pd
 
-from core.reference import load_portaria_sunburst
-
-
-def etiqueta_ano(df, ano):
-    # cria as etiquetas para os intervalos aceitáveis e esperados com o ano
-    # correcto correspondente aos dados extraídos
-    # nota: hardcoded a 2024 desde a versão streamlit — passa a ser data-driven
-    # quando os intervalos forem carregados de data/intervalos_ide.csv
-    ano = 2024
-
-    int_aceit = f"Intervalo Aceitável {ano}"
-    int_esper = f"Intervalo Esperado {ano}"
-
-    # caso não haja intervalos para o ano dos dados, por definição usa os de 2024
-    if int_aceit not in df.columns or int_esper not in df.columns:
-        int_aceit = "Intervalo Aceitável 2024"
-        int_esper = "Intervalo Esperado 2024"
-
-    return int_aceit, int_esper
+from core.reference import load_intervalos, load_portaria_sunburst
 
 
 def calculate_score_mimuf(row):
@@ -79,10 +61,17 @@ def calculate_score_bicsp(row):
 
 def merge_portaria_bicsp(df_bicsp, ano):
     """Junta os resultados BI-CSP à estrutura da portaria e agrega os
-    scores por dimensão e para o IDE global (para o sunburst)."""
-    df_portaria = load_portaria_sunburst()
+    scores por dimensão e para o IDE global (para o sunburst).
 
-    df = df_portaria.merge(
+    Os intervalos apresentados vêm de data/intervalos_ide.csv para o ano
+    dos dados (com fallback para o ano disponível mais próximo)."""
+    df_portaria = load_portaria_sunburst()[
+        ["id", "Nome", "Dimensão", "Ponderação", "Lable"]
+    ]
+
+    df = df_portaria.merge(load_intervalos(ano), on="id", how="left")
+
+    df = df.merge(
         df_bicsp[
             [
                 "id",
@@ -117,12 +106,9 @@ def merge_portaria_bicsp(df_bicsp, ano):
         / df.loc[df["Dimensão"] == "IDE", "Ponderação"]
     )
 
-    # apagar intervalos que não fazem sentido
-    int_aceit, int_esper = etiqueta_ano(df, ano)
-    df.loc[df["Dimensão"] == "IDE", int_aceit] = "N/A"
-    df.loc[df["Dimensão"] == "IDE", int_esper] = "N/A"
-    df.loc[df["Nome"] == "IDE", int_aceit] = "N/A"
-    df.loc[df["Nome"] == "IDE", int_esper] = "N/A"
+    # linhas sem intervalos próprios (dimensões, IDE) mostram "N/A"
+    df["Intervalo Aceitável"] = df["Intervalo Aceitável"].fillna("N/A")
+    df["Intervalo Esperado"] = df["Intervalo Esperado"].fillna("N/A")
 
     # IDE
     df.loc[df["Nome"] == "IDE", "Resultado"] = df.loc[

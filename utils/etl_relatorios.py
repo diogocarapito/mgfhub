@@ -22,7 +22,6 @@ from core import process_filter_temporal as _process_filter_temporal
 from core import (
     calculate_score_bicsp,
     calculate_score_mimuf,
-    etiqueta_ano,
     extrair_id,
     localizacao_coluna_medico,
     medico,

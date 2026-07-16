@@ -8,7 +8,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.etl_relatorios import etiqueta_ano
+from core import load_intervalos, load_portaria_sunburst
+
+# nomes das colunas de intervalos (já resolvidas por ano em core.reference)
+INT_ACEIT = "Intervalo Aceitável"
+INT_ESPER = "Intervalo Esperado"
 
 
 @st.cache_data()
@@ -52,8 +56,7 @@ def id_table(df, event_click):
 
 # @st.cache_data()
 def sunburst_bicsp(df, ano, mes, unidade, size=800):
-    # get column names for the intervalos aceitáveis e esperados for the selected year
-    int_aceit, int_esper = etiqueta_ano(df, ano)
+    int_aceit, int_esper = INT_ACEIT, INT_ESPER
 
     df["Impacto"] = df["Score"] * df["Ponderação"] / 2
 
@@ -117,14 +120,15 @@ def sunburst_bicsp(df, ano, mes, unidade, size=800):
 
 @st.cache_data()
 def sunburst_mimuf(df, ano, mes, unidade, size=800):
-    # ano = 2024
-    # get column names for the intervalos aceitáveis e esperados for the selected year
-    int_aceit, int_esper = etiqueta_ano(df, ano)
+    int_aceit, int_esper = INT_ACEIT, INT_ESPER
     df = df[df["Score"] != "Error"]
 
-    df_portatia = pd.read_csv("data/sunburst_portaria_411a_2023.csv")
+    df_portaria = load_portaria_sunburst()[
+        ["id", "Nome", "Dimensão", "Ponderação", "Lable"]
+    ]
+    df_portaria = df_portaria.merge(load_intervalos(ano), on="id", how="left")
 
-    df = df_portatia.merge(
+    df = df_portaria.merge(
         df[["id", "Valor", "Score", "Denominador", "Numerador"]],
         on="id",
         how="left",
@@ -150,12 +154,9 @@ def sunburst_mimuf(df, ano, mes, unidade, size=800):
         / df.loc[df["Dimensão"] == "IDE", "Ponderação"]
     )
 
-    # apagar intervalos que não fazem sentido
-    int_aceit, int_esper = etiqueta_ano(df, ano)
-    df.loc[df["Dimensão"] == "IDE", int_aceit] = "N/A"
-    df.loc[df["Dimensão"] == "IDE", int_esper] = "N/A"
-    df.loc[df["Nome"] == "IDE", int_aceit] = "N/A"
-    df.loc[df["Nome"] == "IDE", int_esper] = "N/A"
+    # linhas sem intervalos próprios (dimensões, IDE) mostram "N/A"
+    df[int_aceit] = df[int_aceit].fillna("N/A")
+    df[int_esper] = df[int_esper].fillna("N/A")
 
     # IDE
     df.loc[df["Nome"] == "IDE", "Resultado"] = df.loc[
@@ -249,52 +250,6 @@ def sunburst_mimuf(df, ano, mes, unidade, size=800):
 
 
 @st.cache_data()
-def horizontal_bar_chart(df1, ano1):
-    # get column names for the intervalos aceitáveis e esperados for the selected year
-    int_aceit, int_esper = etiqueta_ano(df1, ano1)
-
-    df1["Lable"] = df1["Lable"].astype(str)
-
-    df1 = df1.sort_values(by="Score", ascending=False)
-
-    fig = px.bar(
-        df1.loc[df1["Dimensão"] != "IDE"],
-        x="Score",
-        y="Nome",
-        orientation="h",
-        color="Score",
-        # color_continuous_scale=["#FF7E79", "#FFD479", "#56BA39"],
-        color_continuous_scale=[
-            "#FF7E79",
-            "#F0A774",
-            "#FFD479",
-            "#E5CB72",
-            "#56BA39",
-        ],  # 5 color gradient
-        custom_data=["Nome", "Resultado", int_aceit, int_esper],
-        # miminum valiu for the x axis
-        range_x=[0, 2.3],
-    )
-
-    fig.update_traces(
-        hovertemplate="""<b>%{customdata[0]}</b><br>Peso: %{value}%<br>Score: <b>%{color:.3f}</b><br>Resultado: <b>%{customdata[1]:.1f}</b><br>Intervalo Esperado: %{customdata[2]}<br>Intervalo Esperado: %{customdata[3]}<extra></extra>""",
-        hoverlabel=dict(font=dict(size=14)),
-        # hovertext on the lable og the bar
-        texttemplate="%{x:.1f}",
-        textposition="outside",
-        insidetextanchor="start",
-    )
-
-    fig.update_layout(
-        title="unidade",
-        showlegend=False,
-        height=900,
-    )
-
-    st.plotly_chart(fig, width="stretch")
-
-
-@st.cache_data()
 def dumbbell_plot(dict_dfs, ano):
     dict_figs = {}
 
@@ -379,7 +334,7 @@ def dumbbell_plot(dict_dfs, ano):
     i = 0
 
     for each in dfs:
-        int_aceit, int_esper = etiqueta_ano(each["df"], ano)
+        int_aceit, int_esper = INT_ACEIT, INT_ESPER
 
         # drop rows if "Score" is  None
         each["df"] = each["df"].dropna(subset=["Score"])
@@ -466,8 +421,7 @@ def dumbbell_plot(dict_dfs, ano):
 
 @st.cache_data()
 def tabela(df, ano, nome):
-    ano = 2024
-    int_aceit, int_esper = etiqueta_ano(df, ano)
+    int_aceit, int_esper = INT_ACEIT, INT_ESPER
 
     df = df.loc[df["Dimensão"] != "IDE"]
 
