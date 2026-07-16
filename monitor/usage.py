@@ -45,10 +45,7 @@ def fetch_all_rows(table_name, chunk_size=1000):
 
 def get_data(table_name):
     # get the data from supabase
-
-    # data = supabase.table("ide_uploads").select("*").execute()
-    data = fetch_all_rows(table_name)
-    return data
+    return fetch_all_rows(table_name)
 
 
 st.title("mgfhub IDE Usage")

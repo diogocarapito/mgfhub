@@ -5,19 +5,19 @@ install:
 		pip install -r requirements.txt
 
 test:
-	pytest -vv --cov=mgfhub --cov=utils --cov=pages tests/test_*.py
+	pytest -vv --cov=mgfhub --cov=core --cov=utils --cov=pages tests/test_*.py
 
 test-cov:
-	pytest -vv --cov=mgfhub --cov=utils --cov=pages tests/test_*.py --cov-report term-missing
+	pytest -vv --cov=mgfhub --cov=core --cov=utils --cov=pages tests/test_*.py --cov-report term-missing
 
 format:
-	black . *.py utils/*.py pages/*.py tests/*.py
+	black . *.py core/*.py utils/*.py pages/*.py tests/*.py
 
 run:
 	streamlit run mgfhub.py
 
 lint:
-	pylint --disable=R,C,W0622 *.py utils/*.py pages/*.py tests/*.py
+	pylint --disable=R,C,W0622 *.py core/*.py monitor/*.py utils/*.py pages/*.py tests/*.py
 
 docker-build:
 	docker build -t mgfhub .

@@ -1,0 +1,13 @@
+{
+  "id_indicador": 341,
+  "nome_indicador": "341 - Despesa PVP medic. pres. compart. p/ insc. padrão",
+  "min_aceitavel": 0.0,
+  "min_esperado": 0.0,
+  "max_esperado": 133.0,
+  "max_aceitavel": 163.0,
+  "numerador": 130.0,
+  "denominador": 1.0,
+  "valor": 130.0,
+  "quantos_faltam_aceitavel": 130,
+  "quantos_faltam_esperado": 130
+}

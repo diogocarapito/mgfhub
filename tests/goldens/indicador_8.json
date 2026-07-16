@@ -1,0 +1,13 @@
+{
+  "id_indicador": 8,
+  "nome_indicador": "8 - Taxa de utilização de consultas de PF (méd./enf.)",
+  "min_aceitavel": 38.0,
+  "min_esperado": 60.0,
+  "max_esperado": 100.0,
+  "max_aceitavel": 100.0,
+  "numerador": 792.0,
+  "denominador": 1200.0,
+  "valor": 66.0,
+  "quantos_faltam_aceitavel": 336,
+  "quantos_faltam_esperado": 72
+}
