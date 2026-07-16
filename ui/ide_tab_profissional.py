@@ -20,7 +20,7 @@ from utils.style import em_desenvolvimento
 
 
 # @st.cache_data
-def tab_visao_profissional(df_mimuf, df_bicsp):
+def tab_visao_profissional(df_mimuf):
     # radio escolha visualização
     st.session_state["opcao_visualizacao_tab_profissional"] = st.radio(
         "Visualização",

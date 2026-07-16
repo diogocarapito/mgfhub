@@ -1,7 +1,8 @@
 import streamlit as st
 
 from ui.ui_utils import warning_if_empty
-from ui.components import visualization_options_ui
+
+# from ui.components import visualization_options_ui
 
 # from utils.etl_relatorios import (
 #     etl_bicsp,

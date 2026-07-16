@@ -91,9 +91,7 @@ with tab_prof_geral:
         st.warning(mimuf_nao_carregado)
 
     elif len(st.session_state["df_mimuf"]) >= 1:
-        tab_visao_profissional(
-            st.session_state["df_mimuf"], st.session_state["df_bicsp"]
-        )
+        tab_visao_profissional(st.session_state["df_mimuf"])
 
 
 with tab_nao_ide:

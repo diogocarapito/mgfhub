@@ -71,7 +71,7 @@ def tab_visao_indicador(df_mimuf):
 
         (
             col_visualizacao,
-            col_filtro_equipa_1,
+            _,
         ) = st.columns([1, 1])
 
     #        with col_filtro_equipa_1:
@@ -163,12 +163,12 @@ def tab_visao_indicador(df_mimuf):
 
         # visualização barra horizontal com os valores indicador
         (
-            metric_col_0,
+            _,
             metric_col_1,
             metric_col_2,
             metric_col_3,
             metric_col_4,
-            metric_col_5,
+            _,
         ) = st.columns(
             [1, 2, 2, 2, 2, 1]  # , vertical_alignment="center"
         )
@@ -203,7 +203,7 @@ def tab_visao_indicador(df_mimuf):
                 help="Numero de cumpridores necessários para atingir o valor aceitável para o indicador. Por baixo reflete o número actual acima ou abaixo do alvo mínimo esperado (Verde)",
             )
 
-        ide_bar_col_1, ide_bar_col_2, ide_bar_col_3 = st.columns(
+        _, ide_bar_col_2, ide_bar_col_3 = st.columns(
             [1, 15, 4], vertical_alignment="center"
         )
 

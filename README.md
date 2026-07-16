@@ -15,45 +15,30 @@ Nova versão 2.1 disponível em [mgfhub.com](mgfhub.com)
 
 ---
 
-## cheat sheet
-
-### create and activate .venv
+## Desenvolvimento local
 
 ```bash
-python3.13 -m venv .venv
-source .venv/bin/activate
+make venv    # primeira vez: cria .venv (python3.13) e instala dependências
+make run     # corre a app em http://localhost:8501
+make test    # corre os testes
+make check   # format + lint + testes (antes de cada commit)
+make help    # lista todos os comandos
 ```
 
-### Dockerfile
+Os targets do Makefile usam `.venv/bin/` automaticamente — não é preciso ativar o venv.
 
-build
+### Docker
 
 ```bash
-docker build -t mgfhub:latest .
+make docker  # build + run + health-check + stop
 ```
 
-check image id
+ou manualmente com `make docker-build` / `make docker-run` / `make docker-test`.
 
-```bash
-docker images
-```
-
-run with image id
-
-```bash
-docker run -p 8501:8501 mgfhub:latest
-```
-
-run docker scout
+docker scout:
 
 ```bash
 docker scout quickview mgfhub:latest
-```
-
-```bash
 docker scout cves mgfhub:latest
-```
-
-```bash
 docker scout recommendations mgfhub:latest
 ```
