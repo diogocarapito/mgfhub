@@ -1,58 +1,77 @@
 # Deploy no VPS (transição Streamlit → v3)
 
-Um único `docker compose` corre as duas apps atrás do Caddy, que trata
-do HTTPS automaticamente (Let's Encrypt):
+Setup real: **nginx no host** a servir mgfhub.com (Streamlit) com
+**Cloudflare em modo proxied** à frente. A fase beta é puramente
+aditiva — o que serve mgfhub.com hoje não é tocado:
 
-| domínio          | app                          |
-|------------------|------------------------------|
-| mgfhub.com       | Streamlit atual (porta 8501) |
-| beta.mgfhub.com  | FastAPI v3 (porta 8000)      |
+| domínio          | app                          | como                              |
+|------------------|------------------------------|-----------------------------------|
+| mgfhub.com       | Streamlit atual              | como está (nginx + container)     |
+| beta.mgfhub.com  | FastAPI v3 (127.0.0.1:8000)  | novo vhost nginx + compose.beta   |
 
-## Pré-requisitos
+## Passos
 
-1. Registos DNS **A** de `mgfhub.com`, `www.mgfhub.com` e `beta.mgfhub.com`
-   a apontar para o IP do VPS.
-2. Docker + docker compose no VPS.
-3. Portas **80 e 443 livres** — parar primeiro o que estiver a servir a
-   app atualmente (container antigo, nginx, etc.), senão o Caddy não
-   arranca.
+### 1. Cloudflare
 
-## Primeira instalação
+Adicionar o registo **A** `beta` → IP do VPS, **proxied** (nuvem
+laranja). O certificado universal da Cloudflare já cobre
+`beta.mgfhub.com`; o modo SSL do domínio (Flexible/Full/Full strict)
+aplica-se igual ao mgfhub.com — não é preciso mudar nada.
+
+### 2. VPS — container v3
 
 ```bash
-git clone https://github.com/diogocarapito/mgfhub
-cd mgfhub
-git checkout v3-fastapi-htmx        # até ao merge para master
-
-# opcional: telemetria supabase da app streamlit
-# echo "SUPABASE_URL=..."  > .env
-# echo "SUPABASE_KEY=..." >> .env
-
+cd mgfhub && git fetch && git checkout v3-fastapi-htmx
 cd deploy
-docker compose up -d --build
-docker compose ps                    # os 3 serviços devem ficar healthy
-docker compose logs caddy | tail     # confirmar a emissão dos certificados
+docker compose -f compose.beta.yaml up -d --build
+curl http://127.0.0.1:8000/healthz     # → {"status":"ok"}
 ```
 
-## Atualizar
+O container fica exposto **apenas em localhost** — quem serve o público
+é o nginx. Se a porta 8000 já estiver ocupada no VPS:
+`MGFHUB_V3_PORT=8010 docker compose -f compose.beta.yaml up -d --build`
+(e usar essa porta no `proxy_pass`).
+
+### 3. VPS — vhost nginx
+
+Usar `nginx-beta.conf` como base, **espelhando o server block que já
+serve mgfhub.com** (mesmo `listen`/certificados; um certificado
+Cloudflare Origin CA cobre `*.mgfhub.com`, por isso os mesmos ficheiros
+servem). Só mudam `server_name`, `proxy_pass` e o
+`client_max_body_size 25m` (sem ele o nginx rejeita os uploads xlsx
+com 413).
+
+```bash
+sudo cp nginx-beta.conf /etc/nginx/sites-available/beta.mgfhub.com
+# ajustar conforme o vhost existente
+sudo ln -s /etc/nginx/sites-available/beta.mgfhub.com /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### 4. Verificar
+
+`https://beta.mgfhub.com` → home da v3; `/indicadores` e `/ide` com um
+upload real.
+
+## Atualizar a v3
 
 ```bash
 cd mgfhub && git pull
-cd deploy && docker compose up -d --build
+cd deploy && docker compose -f compose.beta.yaml up -d --build
 ```
+
+(As sessões de upload vivem em memória: um rebuild descarta-as — igual
+a um restart do Streamlit hoje.)
 
 ## Rollback
 
-O rollback da v3 é parar o serviço (`docker compose stop mgfhub-v3`) —
-o mgfhub.com continua a ser servido pela app Streamlit, que não é
-afetada. Para reverter tudo ao mecanismo de deploy antigo:
-`docker compose down` e repor o serviço anterior.
+`docker compose -f compose.beta.yaml down` + remover o vhost. O
+mgfhub.com nunca é afetado.
 
-## Notas
+## Alternativa futura: stack completa com Caddy
 
-- Os certificados e a configuração do Caddy ficam nos volumes
-  `caddy_data`/`caddy_config` — sobrevivem a rebuilds.
-- A v3 corre num único processo e guarda as sessões de upload em
-  memória: um `up -d --build` descarta as sessões ativas (os
-  utilizadores voltam a carregar os xlsx — igual ao comportamento de um
-  restart do Streamlit hoje).
+`compose.yaml` + `Caddyfile` correm as duas apps atrás do Caddy
+(ocupa as portas 80/443 — só faz sentido se um dia substituir o nginx).
+Com Cloudflare proxied, o modo SSL recomendado nesse cenário é Full
+(strict) com certificado Origin CA montado no Caddy, ou desligar o
+proxy durante a emissão Let's Encrypt.

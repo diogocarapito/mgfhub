@@ -1,0 +1,18 @@
+# v3 ao lado do nginx existente no host (caminho recomendado enquanto o
+# nginx servir mgfhub.com): só o container FastAPI, exposto apenas em
+# localhost — o nginx faz o proxy e o HTTPS de beta.mgfhub.com.
+#
+#   docker compose -f compose.beta.yaml up -d --build
+#
+# Ver nginx-beta.conf para o vhost e deploy/README.md para os passos.
+
+services:
+  mgfhub-v3:
+    build:
+      context: ..
+      dockerfile: Dockerfile.v3
+    restart: unless-stopped
+    ports:
+      # porta no host configurável: MGFHUB_V3_PORT=8010 docker compose ... up
+      # (ajustar o proxy_pass do nginx em conformidade)
+      - "127.0.0.1:${MGFHUB_V3_PORT:-8000}:8000"
