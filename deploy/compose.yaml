@@ -31,7 +31,8 @@ services:
     # credenciais supabase da telemetria (opcional; sem elas a app funciona
     # na mesma, só não regista utilização)
     env_file:
-      - ../.env
+      - path: ../.env
+        required: false
 
   mgfhub-v3:
     build:
