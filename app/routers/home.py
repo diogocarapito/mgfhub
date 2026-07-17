@@ -6,6 +6,7 @@ import pandas as pd
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
+from app import auth
 from app.templating import templates
 from core.reference import DATA_DIR
 
@@ -42,5 +43,5 @@ def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"cartoes": _cartoes()},
+        context={"cartoes": _cartoes(), "utilizador": auth.utilizador_atual(request)},
     )

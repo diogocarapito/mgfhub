@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Conta — mgfhub{% endblock %}
+
+{% block content %}
+<h1>Conta</h1>
+<p>{{ utilizador.nome }} · <small>{{ utilizador.email }}</small></p>
+
+{% if mensagem %}<article class="ok-msg">✅ {{ mensagem }}</article>{% endif %}
+{% if erro %}<article class="erro-upload">⚠️ {{ erro }}</article>{% endif %}
+
+<h2>Unidades</h2>
+
+{% if not unidades %}
+<p>Ainda não pertences a nenhuma unidade. Cria uma (ficas gestor) ou junta-te com um código de convite.</p>
+{% endif %}
+
+{% for unidade in unidades %}
+<article>
+    <header>
+        <strong>{{ unidade.nome }}</strong>
+        <mark class="tag">{{ unidade.papel }}</mark>
+        {% if unidade.ativa %}
+        <mark class="tag">ativa</mark>
+        {% else %}
+        <form method="post" action="/conta/unidades/{{ unidade.id }}/ativa" class="inline">
+            <button class="secondary outline btn-pequeno">usar esta unidade</button>
+        </form>
+        {% endif %}
+    </header>
+
+    {% if unidade.papel == "gestor" %}
+    <details>
+        <summary>Gerir unidade</summary>
+
+        <h4>Convite</h4>
+        {% if unidade.convite %}
+        <p>Código ativo: <code>{{ unidade.convite.codigo }}</code>
+            <small>(expira {{ unidade.convite.expira_em[:10] }})</small></p>
+        {% else %}
+        <p><small>Sem convite ativo.</small></p>
+        {% endif %}
+        <form method="post" action="/conta/unidades/{{ unidade.id }}/convite" class="inline">
+            <button class="secondary btn-pequeno">Gerar novo código de convite</button>
+        </form>
+
+        <h4>Membros</h4>
+        <ul>
+            {% for membro in unidade.membros %}
+            <li>
+                {{ membro.nome }} <small>({{ membro.email }} · {{ membro.papel }})</small>
+                {% if membro.papel != "gestor" %}
+                <form method="post"
+                      action="/conta/unidades/{{ unidade.id }}/membros/{{ membro.id }}/remover"
+                      class="inline">
+                    <button class="secondary outline btn-pequeno">remover</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+
+        <h4>Zona perigosa</h4>
+        <form method="post" action="/conta/unidades/{{ unidade.id }}/apagar"
+              onsubmit="return confirm('Apagar a unidade «{{ unidade.nome }}» e TODOS os dados guardados? Esta ação é irreversível.')">
+            <button class="contrast btn-pequeno">Apagar unidade e dados</button>
+        </form>
+    </details>
+    {% endif %}
+</article>
+{% endfor %}
+
+<div class="lado-a-lado">
+    <article>
+        <h4>Criar unidade</h4>
+        <form method="post" action="/conta/unidades">
+            <input type="text" name="nome" placeholder="ex: USF Exemplo" required>
+            <button type="submit">Criar (fico gestor)</button>
+        </form>
+    </article>
+    <article>
+        <h4>Juntar-me a uma unidade</h4>
+        <form method="post" action="/conta/unidades/juntar">
+            <input type="text" name="codigo" placeholder="código de convite" required>
+            <button type="submit">Juntar</button>
+        </form>
+    </article>
+</div>
+
+<hr>
+<details>
+    <summary>Apagar conta</summary>
+    <p><small>Apaga a tua conta e as sessões. Unidades onde sejas o único membro são
+        apagadas juntamente com os dados guardados; as restantes mantêm-se.</small></p>
+    <form method="post" action="/conta/apagar"
+          onsubmit="return confirm('Apagar a conta? Esta ação é irreversível.')">
+        <button class="contrast btn-pequeno">Apagar a minha conta</button>
+    </form>
+</details>
+{% endblock %}

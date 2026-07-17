@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar — mgfhub{% endblock %}
+
+{% block content %}
+<div class="form-estreito">
+    <h1>Entrar</h1>
+
+    {% if erro %}<article class="erro-upload">⚠️ {{ erro }}</article>{% endif %}
+
+    <form method="post" action="/entrar">
+        <label>Email
+            <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label>Password
+            <input type="password" name="password" required autocomplete="current-password">
+        </label>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <p><small>Ainda não tens conta? <a href="/registar">Registar</a></small></p>
+    <p><small>Esqueceste-te da password? Contacta
+        <a href="mailto:mgfhub.suporte@gmail.com">mgfhub.suporte@gmail.com</a></small></p>
+</div>
+{% endblock %}

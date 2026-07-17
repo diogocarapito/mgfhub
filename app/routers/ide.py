@@ -6,12 +6,13 @@ mudança de controlo re-renderiza a tab via htmx.
 """
 
 import io
+from contextlib import closing
 
 import pandas as pd
-from fastapi import APIRouter, File, Request, UploadFile
+from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse
 
-from app import session_store
+from app import auth, db, session_store, storage
 from app.templating import templates
 from core.charts import (
     build_barra_alvo,
@@ -307,10 +308,32 @@ _CONTEXTOS = {
 }
 
 
-def _resumo_sessao(dados):
+def _nome_unidade(unidade_id):
+    with closing(db.ligar()) as con:
+        row = con.execute(
+            "SELECT nome FROM unidades WHERE id = ?", (unidade_id,)
+        ).fetchone()
+    return row["nome"] if row else None
+
+
+def _dados_e_utilizador(request):
+    """Fonte dos dados: a unidade ativa (persistente) para quem tem sessão
+    iniciada; caso contrário a sessão anónima em memória."""
+    utilizador = auth.utilizador_atual(request)
+    if utilizador and utilizador["unidade_ativa"]:
+        return storage.carregar_uploads(utilizador["unidade_ativa"]), utilizador
+    return session_store.obter(request), utilizador
+
+
+def _resumo_sessao(dados, utilizador=None):
+    persistente = bool(utilizador and utilizador.get("unidade_ativa"))
     return {
         "bicsp": list((dados.get("bicsp") or {}).keys()),
         "mimuf": list((dados.get("mimuf") or {}).keys()),
+        "persistente": persistente,
+        "unidade_nome": (
+            _nome_unidade(utilizador["unidade_ativa"]) if persistente else None
+        ),
     }
 
 
@@ -319,9 +342,10 @@ def _resumo_sessao(dados):
 
 @router.get("/ide", response_class=HTMLResponse)
 def ide(request: Request):
-    dados = session_store.obter(request)
+    dados, utilizador = _dados_e_utilizador(request)
     context = {
-        "resumo": _resumo_sessao(dados),
+        "utilizador": utilizador,
+        "resumo": _resumo_sessao(dados, utilizador),
         "erros": [],
         **_ctx_unidade(dados, request.query_params),
     }
@@ -332,7 +356,7 @@ def ide(request: Request):
 def ide_tab(request: Request, tab: str):
     if tab not in _CONTEXTOS:
         tab = "unidade"
-    dados = session_store.obter(request)
+    dados, _ = _dados_e_utilizador(request)
     context = _CONTEXTOS[tab](dados, request.query_params)
     return templates.TemplateResponse(
         request=request, name="partials/ide_tabs.html", context=context
@@ -374,10 +398,27 @@ async def ide_upload(
                 "confirma que são os xlsx exportados do MIM@UF (ver FAQs)."
             )
 
-    token, dados = session_store.guardar(request, bicsp=novos_bicsp, mimuf=novos_mimuf)
+    utilizador = auth.utilizador_atual(request)
+    token = None
+    if utilizador and utilizador["unidade_ativa"]:
+        # sessão iniciada: os uploads ficam guardados na unidade
+        if novos_bicsp:
+            storage.guardar_uploads(
+                utilizador["unidade_ativa"], utilizador["id"], "bicsp", novos_bicsp
+            )
+        if novos_mimuf:
+            storage.guardar_uploads(
+                utilizador["unidade_ativa"], utilizador["id"], "mimuf", novos_mimuf
+            )
+        dados = storage.carregar_uploads(utilizador["unidade_ativa"])
+    else:
+        token, dados = session_store.guardar(
+            request, bicsp=novos_bicsp, mimuf=novos_mimuf
+        )
 
     context = {
-        "resumo": _resumo_sessao(dados),
+        "utilizador": utilizador,
+        "resumo": _resumo_sessao(dados, utilizador),
         "erros": erros + avisos,
         **_ctx_unidade(dados, request.query_params),
     }
@@ -386,5 +427,28 @@ async def ide_upload(
         name="partials/ide_dashboard.html",
         context=context,
     )
-    session_store.anexar_cookie(response, token)
+    if token:
+        session_store.anexar_cookie(response, token)
     return response
+
+
+@router.post("/ide/uploads/apagar", response_class=HTMLResponse)
+def apagar_upload(request: Request, tipo: str = Form(...), nome: str = Form(...)):
+    utilizador = auth.utilizador_atual(request)
+    if not (utilizador and utilizador["unidade_ativa"]):
+        return HTMLResponse("", status_code=403)
+
+    storage.apagar_upload(utilizador["unidade_ativa"], tipo, nome)
+    dados = storage.carregar_uploads(utilizador["unidade_ativa"])
+
+    context = {
+        "utilizador": utilizador,
+        "resumo": _resumo_sessao(dados, utilizador),
+        "erros": [],
+        **_ctx_unidade(dados, request.query_params),
+    }
+    return templates.TemplateResponse(
+        request=request,
+        name="partials/ide_dashboard.html",
+        context=context,
+    )

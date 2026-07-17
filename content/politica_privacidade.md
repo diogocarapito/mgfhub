@@ -1,47 +1,47 @@
-#### Última atualização: 9/11/2024
+#### Última atualização: 17/07/2026
 
-A sua privacidade é importante para nós. Esta **Política de Privacidade** descreve como a mgfhub coleta, armazena e utiliza informações relacionadas com a informçaão necessária e gerada para o funcionamento da aplicação. Por favor, leia este documento atentamente para compreender as práticas adotadas.
+A sua privacidade é importante para nós. Esta **Política de Privacidade** descreve que dados o mgfhub recolhe e guarda, para quê, e quais os seus direitos. O mgfhub pode ser usado **sem conta** (nada fica guardado) ou **com conta** (os dados analíticos ficam guardados na sua unidade). Leia atentamente as duas secções.
 
-### 1. Informações coletadas
+### 1. Utilização sem conta
 
-A aplicação coleta apenas **dados mínimos necessários** para o funcionamento e o registro de atividade da aplicação. Especificamente, ao fazer o upload de um documento Excel, registramos exclusivamente:
+Ao utilizar o mgfhub sem sessão iniciada:
 
-- O mês e ano referentes aos dados analisados no Excel;
-- A unidade funcional à qual os dados se referem;
-- A data em que foi feito o upload.
+- Os ficheiros Excel (BI-CSP/MIM@UF) são processados **em memória** e descartados automaticamente após um período curto de inatividade. **Não são arquivados** no servidor.
+- Registamos apenas, para estatísticas de utilização: o mês/ano dos dados analisados, a unidade funcional a que se referem e a data do upload. Estes registos não contêm nomes de profissionais nem dados de utentes.
+- É usado um cookie técnico de sessão (aleatório e temporário) apenas para associar os ficheiros carregados à sua sessão de análise. Não é usado para rastreio.
 
-Não coletamos ou armazenamos informações pessoais, identificadores de utilizador ou dados sensíveis contidos nos documentos Excel enviados. Não arquivamos o documentos que foi feito upload na aplicação
+### 2. Utilização com conta (dados guardados)
 
-### 2. Finalidade do tratamento dos dados
+Ao criar conta e associar-se a uma unidade, o mgfhub guarda:
 
-A coleta dos dados mencionados (mês, ano, unidade funcional e data de upload) serve unicamente para fins de registro de atividade e para monitorar o uso da aplicação. Esses dados ajudam-nos a compreender o nível de utilização da aplicação para melhorar os serviços prestados.
+- **Dados da conta**: nome, email e password (guardada apenas de forma cifrada/irreversível).
+- **Dados analíticos da unidade**: os resultados processados dos ficheiros BI-CSP/MIM@UF carregados pelos membros — valores agregados de indicadores por unidade, por mês e **por médico identificado pelo nome**, tal como constam dos ficheiros exportados. Os ficheiros Excel originais **não** são arquivados; apenas os resultados processados.
+- Estes dados destinam-se exclusivamente a permitir aos membros da unidade consultar as suas análises ao longo do tempo, sem repetirem uploads.
 
-### 3. Não utilização de dados pessoais
+**Base de licitude**: o tratamento assenta no consentimento (criação voluntária de conta e upload voluntário dos ficheiros) e no interesse legítimo dos profissionais na monitorização do seu próprio desempenho contratualizado. Os dados de desempenho por médico são dados pessoais dos profissionais da unidade: **quem carrega os ficheiros é responsável por garantir que o faz no contexto da sua equipa e com o conhecimento desta**.
 
-Esclarecemos que a nossa aplicação não armazena qualquer informação pessoal. Os documentos Excel enviados não têm suas informações pessoais ou nomes de profissionais retidos em nosso sistema, e são processados apenas para a geração dos relatórios e gráficos solicitados. Após o processamento, não mantemos cópias do conteúdo completo dos documentos.
+**Acesso**: apenas os membros da unidade têm acesso aos dados da unidade. O gestor da unidade controla quem é membro (convites e remoções).
 
-### 4. Cookies e geolocalização
+**Retenção e eliminação**: os dados permanecem guardados enquanto a unidade existir. Qualquer membro pode apagar uploads individuais; o gestor pode apagar a unidade (elimina todos os dados guardados); qualquer utilizador pode apagar a sua conta. A eliminação é efetiva e não reversível.
 
-Nossa aplicação não utiliza cookies, geolocalização ou qualquer tecnologia de rastreamento que permita identificar ou monitorar o comportamento dos utilizadores. Nosso objetivo é garantir uma experiência de uso que respeite a privacidade e o anonimato.
+### 3. O que nunca fazemos
 
-### 5. Segurança dos dados
+- Não vendemos nem partilhamos dados com terceiros.
+- Não usamos os dados clínico-organizacionais para outro fim que não a apresentação das análises aos membros da unidade.
+- Não usamos cookies de publicidade, rastreio ou geolocalização — apenas cookies técnicos de sessão/login.
 
-Empregamos medidas de segurança para proteger as informações mínimas coletadas, como o mês, ano e unidade funcional, contra acessos não autorizados ou alterações indevidas. Embora esses dados sejam de natureza não identificável, seguimos as melhores práticas de segurança para garantir sua integridade.
+### 4. Alojamento e segurança
 
-### 6. Compartilhamento de dados com terceiros
+Os dados são guardados num servidor gerido pelo mgfhub na União Europeia. As passwords são guardadas com derivação criptográfica (scrypt); as ligações são feitas por HTTPS; o acesso aos dados guardados exige sessão iniciada e pertença à unidade. Nenhum sistema é infalível — carregue apenas os ficheiros necessários à análise.
 
-Garantimos que não compartilhamos as informações coletadas com terceiros. Todos os dados processados, incluindo o mês, ano e unidade funcional, são mantidos exclusivamente para o uso interno da nossa aplicação. Não realizamos transferências de dados para parceiros, fornecedores ou outros serviços externos.
+### 5. Direitos dos utilizadores
 
-### 7. Direitos dos utilizadores
+Nos termos do RGPD, tem direito ao acesso, retificação, portabilidade, oposição e eliminação dos seus dados. A eliminação está disponível diretamente na aplicação (apagar upload / unidade / conta). Para os restantes direitos, ou dúvidas, contacte: **mgfhub.suporte@gmail.com**.
 
-Os utilizadores têm o direito de pedir as informações pessoais armazenadas (caso aplicável), retificar dados incompletos, incorretos ou desatualizados, excluir dados que estejam no sistema, desde que permitido por lei e de acordo com os objetivos da aplicação e apor-se ao tratamento de dados, quando aplicável.
+### 6. Alterações
 
-Para exercer qualquer um desses direitos, os utilizadores podem entrar em contato conosco por meio do nosso e-mail: mgfhub.suporte@gmail.com
+Esta política pode ser atualizada com a evolução do projeto; as alterações são publicadas nesta página com a data no topo.
 
-### 8. Alterações na política de privacidade
+### 7. Contacto
 
-Podemos necessitar atualizar esta **Política de Privacidade** de acordo com a evolução do projeto. Qualquer alteração será publicada nesta página, e incentivamos os utilizadores a revisar periodicamente para se manterem informados sobre como protegemos sua privacidade.
-
-### 9. Contato
-
-Para quaisquer questões sobre esta **Política de Privacidade** ou sobre nossas práticas de tratamento de dados, entre em contato através do nosso e-mail suporte mgfhub.suporte@gmail.com
+Para quaisquer questões sobre esta política ou sobre o tratamento de dados: **mgfhub.suporte@gmail.com**

@@ -12,6 +12,7 @@ from typing import List
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse
 
+from app import auth
 from app.templating import templates
 from core.reference import load_indicadores
 from core.search import FILTROS_CONTRATUALIZACAO, filter_indicadores
@@ -86,6 +87,7 @@ def indicadores(
         )
 
     context["oob"] = False
+    context["utilizador"] = auth.utilizador_atual(request)
     return templates.TemplateResponse(
         request=request,
         name="indicadores.html",

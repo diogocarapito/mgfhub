@@ -21,6 +21,7 @@ uvicorn==0.51.0
 jinja2==3.1.6
 python-multipart==0.0.32
 httpx==0.24.1
+markdown==3.10.2
 # nota: uvicorn sem [standard] de propósito — o extra puxa websockets>=13,
 # que colide com o supabase==2.0.3 (realtime pede <13) e a v3 não usa
 # websockets; o supabase sai do stack quando a v3 passar a SQLite

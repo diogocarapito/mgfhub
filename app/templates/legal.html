@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — mgfhub{% endblock %}
+
+{% block content %}
+<h1>{{ titulo }}</h1>
+<div class="texto-legal">
+    {{ conteudo | safe }}
+</div>
+{% endblock %}

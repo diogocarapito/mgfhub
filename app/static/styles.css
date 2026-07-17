@@ -177,3 +177,57 @@
 .grafico {
     min-height: 10rem;
 }
+
+/* --- contas / unidades --- */
+
+.form-estreito {
+    max-width: 28rem;
+    margin: 0 auto;
+}
+
+.inline {
+    display: inline;
+    margin: 0;
+}
+
+.btn-pequeno {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    width: auto;
+    margin: 0;
+}
+
+.ok-msg {
+    border-left: 4px solid #2e7d32;
+    padding: 0.75rem 1rem;
+}
+
+.datasets-guardados {
+    margin-bottom: 1rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid var(--pico-muted-border-color, #ccc);
+    border-radius: 1rem;
+    padding: 0.1rem 0.6rem;
+    margin: 0.15rem 0.2rem;
+    font-size: 0.8rem;
+}
+
+.chip-apagar {
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 0 0.2rem;
+    margin: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    width: auto;
+}
+
+.texto-legal {
+    max-width: 46rem;
+}

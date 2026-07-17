@@ -39,7 +39,12 @@ services:
       context: ..
       dockerfile: Dockerfile.v3
     restart: unless-stopped
+    environment:
+      MGFHUB_DB: /var/lib/mgfhub/mgfhub.db
+    volumes:
+      - mgfhub_dados:/var/lib/mgfhub
 
 volumes:
   caddy_data:
   caddy_config:
+  mgfhub_dados:

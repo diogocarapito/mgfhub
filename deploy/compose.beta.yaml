@@ -16,3 +16,11 @@ services:
       # porta no host configurável: MGFHUB_V3_PORT=8010 docker compose ... up
       # (ajustar o proxy_pass do nginx em conformidade)
       - "127.0.0.1:${MGFHUB_V3_PORT:-8000}:8000"
+    environment:
+      MGFHUB_DB: /var/lib/mgfhub/mgfhub.db
+    volumes:
+      # contas, unidades e uploads guardados sobrevivem a rebuilds
+      - mgfhub_dados:/var/lib/mgfhub
+
+volumes:
+  mgfhub_dados:

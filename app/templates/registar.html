@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Registar — mgfhub{% endblock %}
+
+{% block content %}
+<div class="form-estreito">
+    <h1>Criar conta</h1>
+
+    <p><small>Conta individual e gratuita. Depois de criares a conta podes criar a tua
+        unidade (ficas gestor) ou juntar-te a uma existente com um código de convite.</small></p>
+
+    {% if erro %}<article class="erro-upload">⚠️ {{ erro }}</article>{% endif %}
+
+    <form method="post" action="/registar">
+        <label>Nome
+            <input type="text" name="nome" required autocomplete="name">
+        </label>
+        <label>Email
+            <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label>Password (mínimo 8 caracteres)
+            <input type="password" name="password" required minlength="8" autocomplete="new-password">
+        </label>
+        <button type="submit">Registar</button>
+    </form>
+
+    <p><small>Ao registar aceitas os <a href="/termos">termos de utilização</a> e a
+        <a href="/privacidade">política de privacidade</a>.</small></p>
+    <p><small>Já tens conta? <a href="/entrar">Entrar</a></small></p>
+</div>
+{% endblock %}

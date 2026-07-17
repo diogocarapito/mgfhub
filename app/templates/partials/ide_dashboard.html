@@ -2,11 +2,54 @@
 <article class="erro-upload">⚠️ {{ erro }}</article>
 {% endfor %}
 
+{% if resumo.persistente %}
+<p><small>💾 Os dados ficam guardados na unidade <strong>{{ resumo.unidade_nome }}</strong>.
+    Ao carregar um mês novo, a análise temporal acumula; o mesmo mês volta a ser substituído.</small></p>
+{% elif utilizador %}
+<p><small>⚠️ Sem unidade ativa — os dados desta sessão são temporários.
+    Ativa ou cria uma unidade em <a href="/conta">Conta</a> para os guardar.</small></p>
+{% elif resumo.bicsp or resumo.mimuf %}
+<p><small>Os dados desta sessão são temporários e descartados por inatividade.
+    <a href="/entrar">Entra</a> para os guardar na tua unidade.</small></p>
+{% endif %}
+
 {% if resumo.bicsp or resumo.mimuf %}
-<p><small>
-    Dados carregados — <strong>BI-CSP:</strong> {{ resumo.bicsp | join(" · ") if resumo.bicsp else "—" }}
-    &nbsp;|&nbsp; <strong>MIM@UF:</strong> {{ resumo.mimuf | join(" · ") if resumo.mimuf else "—" }}
-</small></p>
+<div class="datasets-guardados">
+    {% if resumo.bicsp %}
+    <div>
+        <small><strong>BI-CSP:</strong></small>
+        {% for nome in resumo.bicsp %}
+        <span class="chip">{{ nome }}
+            {% if resumo.persistente %}
+            <form hx-post="/ide/uploads/apagar" hx-target="#ide-dashboard"
+                  hx-confirm="Apagar «{{ nome }}» (BI-CSP) da unidade?" class="inline">
+                <input type="hidden" name="tipo" value="bicsp">
+                <input type="hidden" name="nome" value="{{ nome }}">
+                <button class="chip-apagar" aria-label="apagar">×</button>
+            </form>
+            {% endif %}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if resumo.mimuf %}
+    <div>
+        <small><strong>MIM@UF:</strong></small>
+        {% for nome in resumo.mimuf %}
+        <span class="chip">{{ nome }}
+            {% if resumo.persistente %}
+            <form hx-post="/ide/uploads/apagar" hx-target="#ide-dashboard"
+                  hx-confirm="Apagar «{{ nome }}» (MIM@UF) da unidade?" class="inline">
+                <input type="hidden" name="tipo" value="mimuf">
+                <input type="hidden" name="nome" value="{{ nome }}">
+                <button class="chip-apagar" aria-label="apagar">×</button>
+            </form>
+            {% endif %}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
 {% endif %}
 
 {% include "partials/ide_tabs.html" %}

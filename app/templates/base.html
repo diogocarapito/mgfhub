@@ -19,6 +19,16 @@
         <ul>
             <li><a href="/indicadores">Indicadores</a></li>
             <li><a href="/ide">IDE</a></li>
+            {% if utilizador %}
+            <li><a href="/conta">{{ utilizador.nome.split(" ")[0] }}</a></li>
+            <li>
+                <form method="post" action="/sair" class="inline">
+                    <button class="secondary outline btn-pequeno">Sair</button>
+                </form>
+            </li>
+            {% else %}
+            <li><a href="/entrar" role="button" class="secondary outline btn-pequeno">Entrar</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>
@@ -29,6 +39,8 @@
     <small>
         Encontraste algum erro ou tens alguma sugestão?
         <a href="mailto:mgfhub.suporte@gmail.com">mgfhub.suporte@gmail.com</a>
+        · <a href="/privacidade">Privacidade</a>
+        · <a href="/termos">Termos</a>
     </small>
 </footer>
 </body>
