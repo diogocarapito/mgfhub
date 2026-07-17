@@ -245,8 +245,9 @@ def etl_mimuf(list_of_files, on_upload=None, on_warning=None):
             .astype(float)
         )
 
-        # sort by id
-        df = df.sort_values("id")
+        # sort by id (stable: a ordem dos médicos dentro do mesmo indicador
+        # mantém a ordem do ficheiro, igual em qualquer plataforma)
+        df = df.sort_values("id", kind="stable")
 
         # score calculado a partir do valor do indicador e dos intervalos
         # aceitável e esperado (ver core.scoring)

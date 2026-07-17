@@ -73,8 +73,8 @@ def etl_bicsp(list_of_files, on_upload=None):
         # rename "Cód. Indicador" to "id"
         df = df.rename(columns={"Cód. Indicador": "id"})
 
-        # sort by id
-        df = df.sort_values("id")
+        # sort by id (stable, para ordem determinística entre plataformas)
+        df = df.sort_values("id", kind="stable")
 
         # check if df["Hierarquia Contratual - Área"] has "IDE - Desempenho" and keep only those rows
         if df["Hierarquia Contratual - Área"].str.contains("IDE - Desempenho").any():
