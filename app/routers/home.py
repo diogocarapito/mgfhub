@@ -16,6 +16,7 @@ CONTENT_DIR = DATA_DIR.parent / "content"
 # mapeamento das páginas streamlit para as rotas v3 já disponíveis
 ROTAS_V3 = {
     "pages/2_Indicadores.py": "/indicadores",
+    "pages/3_IDE.py": "/ide",
 }
 
 

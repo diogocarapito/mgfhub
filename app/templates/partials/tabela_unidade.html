@@ -1,0 +1,30 @@
+<div class="tabela-scroll">
+    <table>
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>Link</th>
+            <th>Nome</th>
+            <th>Peso</th>
+            <th>Score</th>
+            <th>Resultado</th>
+            <th>Intervalo Aceitável</th>
+            <th>Intervalo Esperado</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in tabela_rows %}
+        <tr>
+            <td>{{ row["id"] | int }}</td>
+            <td><a href="{{ row["link_sdm"] }}" target="_blank" rel="noopener">SDM</a></td>
+            <td>{{ row["Nome"] }}</td>
+            <td>{{ row["Ponderação"] }}</td>
+            <td>{{ row["Score"] | round(2) }}</td>
+            <td>{{ row["Resultado"] | round(1) }}</td>
+            <td>{{ row["Intervalo Aceitável"] }}</td>
+            <td>{{ row["Intervalo Esperado"] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

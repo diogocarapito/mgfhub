@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}IDE — mgfhub{% endblock %}
+
+{% block head_extra %}
+<script src="/static/vendor/plotly.min.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<h1>IDE</h1>
+
+<section>
+    <form hx-post="/ide/upload"
+          hx-target="#ide-dashboard"
+          hx-encoding="multipart/form-data"
+          hx-indicator="#a-processar">
+        <div class="upload-grid">
+            <div>
+                <label for="upload-bicsp">
+                    <strong>Excel do <a href="https://bicsp.min-saude.pt/pt/contratualizacao/idg/Paginas/default.aspx" target="_blank" rel="noopener">BI-CSP</a></strong>
+                </label>
+                <input type="file" id="upload-bicsp" name="bicsp" accept=".xlsx" multiple>
+            </div>
+            <div>
+                <label for="upload-mimuf">
+                    <strong>Excel do MIM@UF</strong>
+                </label>
+                <input type="file" id="upload-mimuf" name="mimuf" accept=".xlsx" multiple>
+            </div>
+        </div>
+        <button type="submit">Analisar</button>
+        <span id="a-processar" class="htmx-indicator" aria-busy="true">a processar…</span>
+    </form>
+
+    <details>
+        <summary>Dicas</summary>
+        <p><strong>1 —</strong> Podes carregar mais do que um ficheiro do BI-CSP e/ou MIM@UF com períodos
+            diferentes, para comparar períodos e/ou unidades. Um novo upload substitui o anterior do mesmo tipo.</p>
+        <p><strong>2 —</strong> Os dados não ficam guardados no servidor do mgfhub: são processados em memória
+            e descartados ao fim de algumas horas de inatividade.</p>
+    </details>
+</section>
+
+<div id="ide-dashboard">
+    {% include "partials/ide_dashboard.html" %}
+</div>
+{% endblock %}

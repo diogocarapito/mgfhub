@@ -4,6 +4,8 @@ import math
 
 import pandas as pd
 
+from core.reference import load_indicadores
+
 # indicadores cujo valor vem multiplicado por 100 na fonte (índices 0-2,
 # despesas, etc.) e é preciso dividir para apresentar
 LIST_INDICADORES_VALOR_10X = [
@@ -20,8 +22,113 @@ LIST_INDICADORES_VALOR_10X = [
 ]
 
 
+# indicadores em que as métricas de utentes em falta não fazem sentido
+# (índices, despesas, taxas por 1000, etc.)
+LIST_INDICADORES_SEM_METRICA = [
+    269,
+    302,
+    310,
+    311,
+    312,
+    330,
+    331,
+    335,
+    341,
+    354,
+    404,
+    409,
+    412,
+    314,
+    294,
+]
+
+
 def extracao_areas_clinicas(df):
     return df["Área clínica"].unique().tolist()
+
+
+def mask_scores_bicsp(df, areas=None, score_range=(0.0, 2.0), peso_range=(1.2, 10.0)):
+    """Anula o Score dos indicadores fora dos filtros (área clínica, score,
+    peso) — os indicadores continuam no sunburst mas sem cor/contributo."""
+    df = df.copy()
+
+    mask_range = (df["Score"] < score_range[0]) | (df["Score"] > score_range[1])
+    df.loc[mask_range, "Score"] = None
+
+    mask_peso = (df["Ponderação"] < peso_range[0]) | (df["Ponderação"] > peso_range[1])
+    df.loc[mask_peso, "Score"] = None
+
+    if areas:
+        df.loc[~df["Área clínica"].isin(areas), "Score"] = None
+
+    return df
+
+
+def metricas_ide(df_sunburst):
+    """IDE atual, IDE máximo teórico para os filtros ativos e a diferença."""
+    tem_ide = df_sunburst.loc[df_sunburst["Nome"] == "IDE", "Score"].notnull().any()
+    ide = (
+        df_sunburst.loc[
+            (df_sunburst["Nome"] == "IDE") & (df_sunburst["Score"].notnull()),
+            "Resultado",
+        ]
+        .values[0]
+        .round(1)
+        if tem_ide
+        else None
+    )
+
+    # soma leaf + linha IDE (100) − 100 = máximo atingível com os filtros
+    max_ide = df_sunburst.loc[
+        ~df_sunburst["Dimensão"].isin(["IDE", None]) & df_sunburst["Score"].notnull(),
+        "Ponderação",
+    ].sum()
+    max_ide -= 100
+    max_ide = round(max_ide, 1)
+
+    diferenca = round(ide - max_ide, 1) if ide is not None else None
+
+    return {"ide": ide, "max_ide": max_ide, "diferenca": diferenca}
+
+
+def resumo_indicador_equipa(valores_indicador):
+    """Nº de utentes cumpridores necessários para os alvos aceitável/esperado
+    (NA para os indicadores em que a métrica não faz sentido)."""
+    if valores_indicador["id_indicador"] in LIST_INDICADORES_SEM_METRICA:
+        return {
+            "num_utentes_amarelo": "NA",
+            "num_utentes_verde": "NA",
+            "faltam_aceitavel": 0,
+            "faltam_esperado": 0,
+        }
+
+    return {
+        "num_utentes_amarelo": 1
+        + int(
+            valores_indicador["denominador"] * valores_indicador["min_aceitavel"] / 100
+        ),
+        "num_utentes_verde": 1
+        + int(
+            valores_indicador["denominador"] * valores_indicador["min_esperado"] / 100
+        ),
+        "faltam_aceitavel": int(valores_indicador["quantos_faltam_aceitavel"]),
+        "faltam_esperado": int(valores_indicador["quantos_faltam_esperado"]),
+    }
+
+
+def prepara_tabela_unidade(df):
+    """Prepara a tabela da visão de unidade: só indicadores com score,
+    com link para o SDM."""
+    df = df.loc[df["Dimensão"] != "IDE"]
+
+    links = load_indicadores()[["id", "link_sdm"]]
+    df = df.merge(links, on="id", how="left")
+
+    df = df.set_index("id")
+    df = df[df.index.notnull()]
+    df = df.dropna(subset=["Score"])
+
+    return df
 
 
 def process_indicador(df):

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/vendor/pico.min.css">
     <link rel="stylesheet" href="/static/styles.css">
     <script src="/static/vendor/htmx.min.js" defer></script>
+    {% block head_extra %}{% endblock %}
 </head>
 <body>
 <header class="container">
@@ -17,6 +18,7 @@
         </ul>
         <ul>
             <li><a href="/indicadores">Indicadores</a></li>
+            <li><a href="/ide">IDE</a></li>
         </ul>
     </nav>
 </header>

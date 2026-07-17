@@ -1,0 +1,23 @@
+<div id="ide-tabs">
+    <nav class="ide-nav" aria-label="Vistas do IDE">
+        <ul>
+            <li><button {% if tab != "unidade" %}class="secondary outline"{% endif %}
+                        hx-get="/ide/unidade" hx-target="#ide-tabs" hx-swap="outerHTML">
+                Visão de Unidade</button></li>
+            <li><button {% if tab != "indicador" %}class="secondary outline"{% endif %}
+                        hx-get="/ide/indicador" hx-target="#ide-tabs" hx-swap="outerHTML">
+                Visão por Indicador</button></li>
+            <li><button {% if tab != "profissional" %}class="secondary outline"{% endif %}
+                        hx-get="/ide/profissional" hx-target="#ide-tabs" hx-swap="outerHTML">
+                Visão por Profissional</button></li>
+        </ul>
+    </nav>
+
+    {% if tab == "unidade" %}
+        {% include "partials/tab_unidade.html" %}
+    {% elif tab == "indicador" %}
+        {% include "partials/tab_indicador.html" %}
+    {% else %}
+        {% include "partials/tab_profissional.html" %}
+    {% endif %}
+</div>

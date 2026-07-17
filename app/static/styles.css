@@ -78,3 +78,102 @@
 .aviso {
     text-align: center;
 }
+
+/* --- IDE --- */
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .upload-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.htmx-indicator {
+    display: none;
+    margin-left: 1rem;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+.erro-upload {
+    border-left: 4px solid #d93526;
+    padding: 0.75rem 1rem;
+}
+
+.ide-nav ul {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.ide-nav li {
+    list-style: none;
+}
+
+.controlos {
+    margin-bottom: 0;
+}
+
+.controlos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 1rem;
+    align-items: start;
+}
+
+.par-numeros {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.metricas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.metrica {
+    padding: 0.75rem 1rem;
+    margin: 0;
+    text-align: center;
+}
+
+.metrica strong {
+    display: block;
+    font-size: 1.8rem;
+}
+
+.ganho {
+    color: #2e7d32;
+}
+
+.defice {
+    color: #c62828;
+}
+
+.lado-a-lado {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .lado-a-lado {
+        grid-template-columns: 1fr;
+    }
+}
+
+.grafico {
+    min-height: 10rem;
+}

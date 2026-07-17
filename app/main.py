@@ -7,7 +7,7 @@ Correr localmente:
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.routers import home, indicadores
+from app.routers import home, ide, indicadores
 from app.templating import BASE_DIR
 
 app = FastAPI(title="mgfhub", docs_url=None, redoc_url=None)
@@ -22,3 +22,4 @@ def healthz():
 
 app.include_router(home.router)
 app.include_router(indicadores.router)
+app.include_router(ide.router)

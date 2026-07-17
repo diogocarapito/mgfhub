@@ -1,0 +1,117 @@
+{% if aviso %}
+<article class="aviso">⚠️ {{ aviso }}</article>
+<hr>
+<p><small>Exemplo da análise (todos os indicadores com score máximo):</small></p>
+{% with chart_id="chart-demo", fig_json=fig_demo %}{% include "partials/chart.html" %}{% endwith %}
+
+{% else %}
+<form class="controlos" hx-get="/ide/unidade" hx-target="#ide-tabs" hx-swap="outerHTML" hx-trigger="change">
+    <div class="controlos-grid">
+        <label>Dados para análise
+            <select name="dataset">
+                {% for d in datasets %}
+                <option value="{{ d }}" {% if d == dataset %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        {% if dataset_2 %}
+        <label>2º dados (comparação)
+            <select name="dataset2">
+                {% for d in datasets %}
+                <option value="{{ d }}" {% if d == dataset_2 %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        {% endif %}
+
+        <fieldset>
+            <legend>Visualização</legend>
+            {% for v in vistas %}
+            <label><input type="radio" name="vista" value="{{ v }}" {% if v == vista %}checked{% endif %}> {{ v }}</label>
+            {% endfor %}
+        </fieldset>
+    </div>
+
+    {% if vista != "Dumbbell" %}
+    <div class="controlos-grid">
+        <label>Área clínica
+            <select name="area" multiple size="3">
+                {% for a in areas_clinicas %}
+                <option value="{{ a }}" {% if a in areas %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <fieldset>
+            <legend>Score (0–2)</legend>
+            <div class="par-numeros">
+                <input type="number" name="score_min" value="{{ score_range[0] }}" min="0" max="2" step="0.1" aria-label="Score mínimo">
+                <input type="number" name="score_max" value="{{ score_range[1] }}" min="0" max="2" step="0.1" aria-label="Score máximo">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Peso (1.2–10)</legend>
+            <div class="par-numeros">
+                <input type="number" name="peso_min" value="{{ peso_range[0] }}" min="1.2" max="10" step="0.2" aria-label="Peso mínimo">
+                <input type="number" name="peso_max" value="{{ peso_range[1] }}" min="1.2" max="10" step="0.2" aria-label="Peso máximo">
+            </div>
+        </fieldset>
+    </div>
+    {% endif %}
+</form>
+
+<div class="metricas">
+    <article class="metrica">
+        <small>IDE</small>
+        <strong>{{ metricas.ide if metricas.ide is not none else "—" }}</strong>
+    </article>
+    <article class="metrica"
+             title="IDE máximo teórico para os filtros selecionados. O ganho representa o potencial no IDE se todos os indicadores incluídos tiverem score 2.">
+        <small>IDE máximo</small>
+        <strong>{{ metricas.max_ide }}</strong>
+        {% if metricas.diferenca is not none %}
+        <small class="ganho">+{{ (metricas.diferenca * -1) | round(1) }} potencial</small>
+        {% endif %}
+    </article>
+    {% if metricas_2 %}
+    <article class="metrica">
+        <small>IDE 2º</small>
+        <strong>{{ metricas_2.ide if metricas_2.ide is not none else "—" }}</strong>
+    </article>
+    {% endif %}
+</div>
+
+{% if vista == "Sunburst" %}
+{% with chart_id="chart-sunburst", fig_json=fig_sunburst %}{% include "partials/chart.html" %}{% endwith %}
+
+{% elif vista == "Tabela" %}
+{% include "partials/tabela_unidade.html" %}
+
+{% elif vista == "Sunburst + Tabela" %}
+<div class="lado-a-lado">
+    <div>{% with chart_id="chart-sunburst", fig_json=fig_sunburst %}{% include "partials/chart.html" %}{% endwith %}</div>
+    <div>{% include "partials/tabela_unidade.html" %}</div>
+</div>
+
+{% elif vista == "Sunburst + Sunburst" %}
+<div class="lado-a-lado">
+    <div>{% with chart_id="chart-sunburst", fig_json=fig_sunburst %}{% include "partials/chart.html" %}{% endwith %}</div>
+    <div>{% with chart_id="chart-sunburst-2", fig_json=fig_sunburst_2 %}{% include "partials/chart.html" %}{% endwith %}</div>
+</div>
+
+{% elif vista == "Dumbbell" %}
+{% with chart_id="chart-dumbbell", fig_json=fig_dumbbell %}{% include "partials/chart.html" %}{% endwith %}
+<details>
+    <summary>Interpretação/dicas</summary>
+    <ul>
+        <li>Passa o rato por cima do círculo/quadrado para mais informação sobre o indicador.</li>
+        <li>O tamanho representa o peso do indicador — indicadores com mais impacto no IDE são maiores.</li>
+        <li>A cor representa o score (0–2) num gradiente vermelho → amarelo → verde.</li>
+        <li>Com dois ficheiros carregados, os dados mais antigos são círculos e os mais recentes quadrados,
+            ordenados pelo score dos dados antigos; a linha mostra a variação entre períodos e a seta a direção.</li>
+        <li>Para mais detalhe, usa o botão de ecrã inteiro no canto superior direito do gráfico.</li>
+    </ul>
+</details>
+{% endif %}
+
+{% endif %}

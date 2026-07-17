@@ -1,0 +1,11 @@
+<div id="{{ chart_id }}" class="grafico"></div>
+<script type="application/json" id="dados-{{ chart_id }}">{{ fig_json | safe }}</script>
+<script>
+    (function () {
+        function render() {
+            var dados = JSON.parse(document.getElementById("dados-{{ chart_id }}").textContent);
+            Plotly.newPlot("{{ chart_id }}", dados.data, dados.layout, {responsive: true, displaylogo: false});
+        }
+        if (window.Plotly) { render(); } else { document.addEventListener("DOMContentLoaded", render); }
+    })();
+</script>

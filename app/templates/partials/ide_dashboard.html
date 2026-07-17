@@ -1,0 +1,12 @@
+{% for erro in erros %}
+<article class="erro-upload">⚠️ {{ erro }}</article>
+{% endfor %}
+
+{% if resumo.bicsp or resumo.mimuf %}
+<p><small>
+    Dados carregados — <strong>BI-CSP:</strong> {{ resumo.bicsp | join(" · ") if resumo.bicsp else "—" }}
+    &nbsp;|&nbsp; <strong>MIM@UF:</strong> {{ resumo.mimuf | join(" · ") if resumo.mimuf else "—" }}
+</small></p>
+{% endif %}
+
+{% include "partials/ide_tabs.html" %}
