@@ -11,6 +11,7 @@ from contextlib import closing
 import pandas as pd
 from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import HTMLResponse
+from unidecode import unidecode
 
 from app import auth, db, session_store, storage
 from app.templating import templates
@@ -316,20 +317,57 @@ def _nome_unidade(unidade_id):
     return row["nome"] if row else None
 
 
+def _normalizar_nome(nome) -> str:
+    # comparação tolerante: sem acentos, caixa nem espaços a mais
+    return " ".join(unidecode(str(nome)).casefold().split())
+
+
+def _separar_por_unidade(dict_dfs, nome_unidade):
+    """Divide o output do ETL entre o que pertence à unidade do utilizador
+    (persiste) e o resto (fica só na sessão, como no uso anónimo)."""
+    if not dict_dfs:
+        return {}, {}
+    alvo = _normalizar_nome(nome_unidade)
+    proprios, alheios = {}, {}
+    for nome, entry in dict_dfs.items():
+        if _normalizar_nome(entry["unidade"]) == alvo:
+            proprios[nome] = entry
+        else:
+            alheios[nome] = entry
+    return proprios, alheios
+
+
 def _dados_e_utilizador(request):
-    """Fonte dos dados: a unidade ativa (persistente) para quem tem sessão
-    iniciada; caso contrário a sessão anónima em memória."""
+    """Fonte dos dados: para quem tem sessão iniciada com unidade ativa,
+    os dados guardados da unidade, sobrepostos com os extras da sessão
+    (ficheiros de outras unidades, não persistidos); caso contrário a
+    sessão anónima em memória."""
     utilizador = auth.utilizador_atual(request)
     if utilizador and utilizador["unidade_ativa"]:
-        return storage.carregar_uploads(utilizador["unidade_ativa"]), utilizador
-    return session_store.obter(request), utilizador
+        dados_db = storage.carregar_uploads(utilizador["unidade_ativa"])
+        extras = session_store.obter(request)
+        dados = {
+            "bicsp": {**(extras.get("bicsp") or {}), **dados_db["bicsp"]},
+            "mimuf": {**(extras.get("mimuf") or {}), **dados_db["mimuf"]},
+        }
+        return dados, utilizador, extras
+    return session_store.obter(request), utilizador, {}
 
 
-def _resumo_sessao(dados, utilizador=None):
+def _resumo_sessao(dados, utilizador=None, extras=None):
     persistente = bool(utilizador and utilizador.get("unidade_ativa"))
+    sessao_bicsp = list((extras or {}).get("bicsp") or {})
+    sessao_mimuf = list((extras or {}).get("mimuf") or {})
+    bicsp = list((dados.get("bicsp") or {}).keys())
+    mimuf = list((dados.get("mimuf") or {}).keys())
+    if persistente:
+        bicsp = [n for n in bicsp if n not in sessao_bicsp]
+        mimuf = [n for n in mimuf if n not in sessao_mimuf]
     return {
-        "bicsp": list((dados.get("bicsp") or {}).keys()),
-        "mimuf": list((dados.get("mimuf") or {}).keys()),
+        "bicsp": bicsp,
+        "mimuf": mimuf,
+        "sessao_bicsp": sessao_bicsp if persistente else [],
+        "sessao_mimuf": sessao_mimuf if persistente else [],
         "persistente": persistente,
         "unidade_nome": (
             _nome_unidade(utilizador["unidade_ativa"]) if persistente else None
@@ -342,10 +380,10 @@ def _resumo_sessao(dados, utilizador=None):
 
 @router.get("/ide", response_class=HTMLResponse)
 def ide(request: Request):
-    dados, utilizador = _dados_e_utilizador(request)
+    dados, utilizador, extras = _dados_e_utilizador(request)
     context = {
         "utilizador": utilizador,
-        "resumo": _resumo_sessao(dados, utilizador),
+        "resumo": _resumo_sessao(dados, utilizador, extras),
         "erros": [],
         **_ctx_unidade(dados, request.query_params),
     }
@@ -356,7 +394,7 @@ def ide(request: Request):
 def ide_tab(request: Request, tab: str):
     if tab not in _CONTEXTOS:
         tab = "unidade"
-    dados, _ = _dados_e_utilizador(request)
+    dados, _, _ = _dados_e_utilizador(request)
     context = _CONTEXTOS[tab](dados, request.query_params)
     # o fragmento atualiza também o painel de filtros (out-of-band)
     context["oob_filtros"] = True
@@ -402,17 +440,44 @@ async def ide_upload(
 
     utilizador = auth.utilizador_atual(request)
     token = None
+    extras = {}
     if utilizador and utilizador["unidade_ativa"]:
-        # sessão iniciada: os uploads ficam guardados na unidade
-        if novos_bicsp:
+        # sessão iniciada: só ficam guardados os ficheiros cuja unidade
+        # (nos metadados do próprio ficheiro) corresponde à unidade ativa;
+        # o resto é analisado apenas nesta sessão, como no uso anónimo
+        nome_unidade = _nome_unidade(utilizador["unidade_ativa"])
+        proprios_bicsp, alheios_bicsp = _separar_por_unidade(novos_bicsp, nome_unidade)
+        proprios_mimuf, alheios_mimuf = _separar_por_unidade(novos_mimuf, nome_unidade)
+
+        if proprios_bicsp:
             storage.guardar_uploads(
-                utilizador["unidade_ativa"], utilizador["id"], "bicsp", novos_bicsp
+                utilizador["unidade_ativa"], utilizador["id"], "bicsp", proprios_bicsp
             )
-        if novos_mimuf:
+        if proprios_mimuf:
             storage.guardar_uploads(
-                utilizador["unidade_ativa"], utilizador["id"], "mimuf", novos_mimuf
+                utilizador["unidade_ativa"], utilizador["id"], "mimuf", proprios_mimuf
             )
-        dados = storage.carregar_uploads(utilizador["unidade_ativa"])
+
+        for entry in list(alheios_bicsp.values()) + list(alheios_mimuf.values()):
+            avisos.append(
+                f"«{entry['nome']}» pertence a «{entry['unidade']}», não à unidade "
+                f"«{nome_unidade}» — foi analisado apenas nesta sessão e não ficou "
+                "guardado."
+            )
+
+        extras = session_store.obter(request)
+        if alheios_bicsp or alheios_mimuf:
+            token, extras = session_store.guardar(
+                request,
+                bicsp=alheios_bicsp or None,
+                mimuf=alheios_mimuf or None,
+            )
+
+        dados_db = storage.carregar_uploads(utilizador["unidade_ativa"])
+        dados = {
+            "bicsp": {**(extras.get("bicsp") or {}), **dados_db["bicsp"]},
+            "mimuf": {**(extras.get("mimuf") or {}), **dados_db["mimuf"]},
+        }
     else:
         token, dados = session_store.guardar(
             request, bicsp=novos_bicsp, mimuf=novos_mimuf
@@ -420,7 +485,7 @@ async def ide_upload(
 
     context = {
         "utilizador": utilizador,
-        "resumo": _resumo_sessao(dados, utilizador),
+        "resumo": _resumo_sessao(dados, utilizador, extras),
         "erros": erros + avisos,
         "oob_filtros": True,
         **_ctx_unidade(dados, request.query_params),

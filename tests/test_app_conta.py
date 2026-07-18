@@ -1,4 +1,4 @@
-"""Testes de contas, unidades e persistência de uploads por unidade."""
+"""Testes de contas, unidades, pedidos de adesão e persistência por unidade."""
 
 import re
 from contextlib import closing
@@ -13,6 +13,10 @@ from app.main import app
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = REPO_ROOT / "tests" / "fixtures"
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+# a unidade dos fixtures xlsx é "USF Fixture" — os testes de persistência
+# usam um nome equivalente (a correspondência é normalizada)
+UNIDADE_FIXTURE = "usf fixture"
 
 
 @pytest.fixture(autouse=True)
@@ -53,6 +57,25 @@ def _codigo_convite(texto_conta):
     return match.group(1)
 
 
+def _id_por_email(email):
+    with closing(db.ligar()) as con:
+        return con.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()[
+            "id"
+        ]
+
+
+def _juntar_e_aceitar(gestor, email_membro, unidade_id=1):
+    """Fluxo completo: membro pede adesão com o código, gestor aceita."""
+    codigo = _codigo_convite(gestor.post(f"/conta/unidades/{unidade_id}/convite").text)
+    membro = _registar(email_membro.split("@")[0].title(), email_membro)
+    resp = membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+    assert "Pedido enviado" in resp.text
+    gestor.post(
+        f"/conta/unidades/{unidade_id}/pedidos/{_id_por_email(email_membro)}/aceitar"
+    )
+    return membro
+
+
 def _upload_bicsp(client):
     nome = "bicsp_com_cabecalho_2024_06.xlsx"
     return client.post(
@@ -65,7 +88,6 @@ def test_registo_e_conta():
     client = _registar("Ana Gestora", "ana@example.com")
     resp = client.get("/conta")
     assert "Ana Gestora" in resp.text
-    # nav mostra o primeiro nome e o botão sair
     assert "Sair" in resp.text
 
 
@@ -88,29 +110,68 @@ def test_login_correto():
     assert "Ana Gestora" in client.get("/conta").text
 
 
-def test_criar_unidade_convite_e_juntar():
+def test_pedido_de_adesao_pendente_ate_aceitar():
     gestora = _registar("Ana Gestora", "ana@example.com")
     _criar_unidade(gestora, "USF Teste")
-
-    resp = gestora.post("/conta/unidades/1/convite")
-    codigo = _codigo_convite(resp.text)
+    codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
 
     membro = _registar("Bruno Membro", "bruno@example.com")
     resp = membro.post("/conta/unidades/juntar", data={"codigo": codigo})
-    assert "Juntaste-te à unidade" in resp.text
+    assert "Pedido enviado" in resp.text
+    # enquanto pendente: sem acesso aos dados nem à unidade
+    assert "pendente" in membro.get("/conta").text
+    assert "BI-CSP não carregados" in membro.get("/ide").text
+    resp = membro.post("/conta/unidades/1/ativa")
+    assert "Não és membro dessa unidade" in resp.text
 
-    # gestora vê os dois membros
+    # gestora vê o pedido e aceita
     resp = gestora.get("/conta")
+    assert "Pedidos de adesão" in resp.text
     assert "Bruno Membro" in resp.text
+    resp = gestora.post(
+        f"/conta/unidades/1/pedidos/{_id_por_email('bruno@example.com')}/aceitar"
+    )
+    assert "Pedido aceite" in resp.text
+
+    # agora é membro
+    resp = membro.get("/conta")
+    assert "membro" in resp.text
+    assert "Pedido de adesão" not in resp.text
 
 
-def test_membro_nao_gere_convites():
+def test_rejeitar_pedido():
     gestora = _registar("Ana Gestora", "ana@example.com")
     _criar_unidade(gestora, "USF Teste")
     codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
 
     membro = _registar("Bruno Membro", "bruno@example.com")
     membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+
+    resp = gestora.post(
+        f"/conta/unidades/1/pedidos/{_id_por_email('bruno@example.com')}/rejeitar"
+    )
+    assert "Pedido rejeitado" in resp.text
+    assert "Ainda não pertences a nenhuma unidade" in membro.get("/conta").text
+
+
+def test_gestor_nao_pode_pedir_adesao():
+    gestora_a = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora_a, "USF A")
+    codigo = _codigo_convite(gestora_a.post("/conta/unidades/1/convite").text)
+
+    gestora_b = _registar("Berta Gestora", "berta@example.com")
+    _criar_unidade(gestora_b, "USF B")
+
+    resp = gestora_b.post("/conta/unidades/juntar", data={"codigo": codigo})
+    assert "Como gestor" in resp.text
+    # e a UI não lhe mostra a opção
+    assert "Juntar-me a outra unidade" not in gestora_b.get("/conta").text
+
+
+def test_membro_nao_gere_convites():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, "USF Teste")
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
 
     resp = membro.post("/conta/unidades/1/convite")
     assert "Só o gestor" in resp.text
@@ -122,9 +183,24 @@ def test_convite_invalido():
     assert "inválido ou expirado" in resp.text
 
 
-def test_upload_persistente_entre_sessoes_e_membros():
+def test_transferir_gestao():
     gestora = _registar("Ana Gestora", "ana@example.com")
     _criar_unidade(gestora, "USF Teste")
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
+
+    resp = gestora.post(
+        f"/conta/unidades/1/transferir/{_id_por_email('bruno@example.com')}"
+    )
+    assert "Gestão transferida" in resp.text
+
+    # papéis trocados: a antiga gestora perde os poderes, o novo ganha-os
+    assert "Só o gestor" in gestora.post("/conta/unidades/1/convite").text
+    assert "<code>" in membro.post("/conta/unidades/1/convite").text
+
+
+def test_upload_persistente_entre_sessoes_e_membros():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
 
     resp = _upload_bicsp(gestora)
     assert "guardados na unidade" in resp.text
@@ -140,19 +216,37 @@ def test_upload_persistente_entre_sessoes_e_membros():
     assert "chart-sunburst" in resp.text
 
     # outro membro da unidade vê os mesmos dados
-    codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
-    membro = _registar("Bruno Membro", "bruno@example.com")
-    membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
     resp = membro.get("/ide")
     assert "USF Fixture 06/2024" in resp.text
 
 
+def test_upload_de_outra_unidade_nao_persiste():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, "USF Outra Qualquer")
+
+    # o ficheiro pertence a «USF Fixture» → renderiza mas não fica guardado
+    resp = _upload_bicsp(gestora)
+    assert "não ficou" in resp.text and "guardado" in resp.text
+    assert "Só nesta sessão" in resp.text
+    assert "chart-" in resp.text  # a análise renderiza na mesma
+
+    # nada na tabela de dados da unidade
+    assert "2024-06" not in gestora.get("/conta").text
+
+    # uma nova sessão não vê nada (não persistiu)
+    outra_sessao = TestClient(app)
+    outra_sessao.post(
+        "/entrar", data={"email": "ana@example.com", "password": "segredo123"}
+    )
+    assert "BI-CSP não carregados" in outra_sessao.get("/ide").text
+
+
 def test_gestor_ve_tabela_de_dados_e_apaga():
     gestora = _registar("Ana Gestora", "ana@example.com")
-    _criar_unidade(gestora, "USF Teste")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
     _upload_bicsp(gestora)
 
-    # tabela por mês na conta: linha 2024-06 com o documento na coluna BI-CSP
     resp = gestora.get("/conta")
     assert "Dados guardados" in resp.text
     assert "2024-06" in resp.text
@@ -168,32 +262,27 @@ def test_gestor_ve_tabela_de_dados_e_apaga():
 
 def test_membro_nao_apaga_dados():
     gestora = _registar("Ana Gestora", "ana@example.com")
-    _criar_unidade(gestora, "USF Teste")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
     _upload_bicsp(gestora)
-    codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
-
-    membro = _registar("Bruno Membro", "bruno@example.com")
-    membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
 
     resp = membro.post(
         "/conta/unidades/1/uploads/apagar",
         data={"tipo": "bicsp", "nome": "USF Fixture 06/2024"},
     )
     assert "Só o gestor" in resp.text
-    # os dados continuam lá
     assert "USF Fixture 06/2024" in membro.get("/ide").text
 
 
-def test_criar_unidade_escondida_quando_ja_tem():
-    client = _registar("Ana Gestora", "ana@example.com")
-    # sem unidade: o formulário de criar aparece
-    assert "Criar (fico gestor)" in client.get("/conta").text
+def test_membro_pode_carregar_dados():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
 
-    _criar_unidade(client, "USF Teste")
-    resp = client.get("/conta")
-    assert "Criar (fico gestor)" not in resp.text
-    # juntar-se a outra unidade continua acessível (recolhido)
-    assert "Juntar-me a outra unidade" in resp.text
+    resp = _upload_bicsp(membro)
+    assert "guardados na unidade" in resp.text
+    # a gestora vê os dados carregados pelo membro
+    assert "USF Fixture 06/2024" in gestora.get("/ide").text
 
 
 def test_anonimo_continua_temporario():
@@ -205,27 +294,21 @@ def test_anonimo_continua_temporario():
 
 def test_remover_membro_perde_acesso():
     gestora = _registar("Ana Gestora", "ana@example.com")
-    _criar_unidade(gestora, "USF Teste")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
     _upload_bicsp(gestora)
-    codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
-
-    membro = _registar("Bruno Membro", "bruno@example.com")
-    membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+    membro = _juntar_e_aceitar(gestora, "bruno@example.com")
     assert "USF Fixture 06/2024" in membro.get("/ide").text
 
-    # obter o id do membro e removê-lo
-    with closing(db.ligar()) as con:
-        membro_id = con.execute(
-            "SELECT id FROM users WHERE email = 'bruno@example.com'"
-        ).fetchone()["id"]
-    gestora.post(f"/conta/unidades/1/membros/{membro_id}/remover")
+    gestora.post(
+        f"/conta/unidades/1/membros/{_id_por_email('bruno@example.com')}/remover"
+    )
 
     assert "USF Fixture 06/2024" not in membro.get("/ide").text
 
 
 def test_apagar_unidade_apaga_dados():
     gestora = _registar("Ana Gestora", "ana@example.com")
-    _criar_unidade(gestora, "USF Teste")
+    _criar_unidade(gestora, UNIDADE_FIXTURE)
     _upload_bicsp(gestora)
 
     gestora.post("/conta/unidades/1/apagar")
@@ -246,10 +329,31 @@ def test_apagar_conta():
     )
     assert "Email ou password incorretos" in resp.text
 
-    # unidade onde era o único membro foi apagada juntamente
     with closing(db.ligar()) as con:
         n_unidades = con.execute("SELECT COUNT(*) c FROM unidades").fetchone()["c"]
     assert n_unidades == 0
+
+
+def test_gestor_com_membros_nao_apaga_conta():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, "USF Teste")
+    _juntar_e_aceitar(gestora, "bruno@example.com")
+
+    resp = gestora.post("/conta/apagar")
+    assert "transfere a gestão" in resp.text.lower()
+    # a conta continua a existir
+    assert "Ana Gestora" in gestora.get("/conta").text
+
+
+def test_criar_unidade_escondida_quando_ja_tem():
+    client = _registar("Ana Gestora", "ana@example.com")
+    assert "Criar (fico gestor)" in client.get("/conta").text
+
+    _criar_unidade(client, "USF Teste")
+    resp = client.get("/conta")
+    assert "Criar (fico gestor)" not in resp.text
+    # gestora não vê a opção de se juntar a outra unidade
+    assert "Juntar-me a outra unidade" not in resp.text
 
 
 def test_paginas_legais():

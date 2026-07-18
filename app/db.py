@@ -71,6 +71,21 @@ MIGRACOES = [
         UNIQUE (unidade_id, tipo, nome) ON CONFLICT REPLACE
     );
     """,
+    # v2 — pedidos de adesão pendentes: o papel ganha o estado 'pendente'
+    # (juntar-se por código passa a pedido que o gestor aceita/rejeita);
+    # o SQLite não permite alterar CHECKs, daí a reconstrução da tabela
+    """
+    CREATE TABLE membros_novo (
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        unidade_id INTEGER NOT NULL REFERENCES unidades(id) ON DELETE CASCADE,
+        papel TEXT NOT NULL CHECK (papel IN ('gestor', 'membro', 'pendente')),
+        criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (user_id, unidade_id)
+    );
+    INSERT INTO membros_novo SELECT * FROM membros;
+    DROP TABLE membros;
+    ALTER TABLE membros_novo RENAME TO membros;
+    """,
 ]
 
 _migrado = False

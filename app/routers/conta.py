@@ -1,9 +1,11 @@
 """Contas e unidades: registo, login, workspace de unidade com um gestor,
-convites por código e gestão de membros.
+pedidos de adesão por código com aprovação, e gestão de membros.
 
-Modelo: contas individuais (sem partilha de passwords); os dados vivem
-ao nível da unidade; cada unidade tem pelo menos um gestor — só o gestor
-gere convites/membros e (futuro) o plano da unidade.
+Modelo: contas individuais; os dados vivem ao nível da unidade; cada
+unidade tem exatamente um gestor. Juntar-se por código cria um pedido
+pendente que o gestor aceita/rejeita; um gestor não se pode juntar a
+outra unidade (transfere primeiro a gestão), e não pode apagar a conta
+enquanto a unidade tiver outros membros.
 """
 
 import secrets
@@ -25,12 +27,14 @@ CONVITE_DIAS = 14
 
 
 def unidades_do_utilizador(user_id: int) -> list:
+    """Unidades onde o utilizador é gestor ou membro (exclui pendentes)."""
     with closing(db.ligar()) as con:
         rows = con.execute(
             """
             SELECT un.id, un.nome, m.papel
             FROM membros m JOIN unidades un ON un.id = m.unidade_id
-            WHERE m.user_id = ? ORDER BY un.nome
+            WHERE m.user_id = ? AND m.papel != 'pendente'
+            ORDER BY un.nome
             """,
             (user_id,),
         ).fetchall()
@@ -46,13 +50,51 @@ def papel_na_unidade(user_id: int, unidade_id: int):
     return row["papel"] if row else None
 
 
+def _e_gestor_de_alguma(user_id: int) -> bool:
+    with closing(db.ligar()) as con:
+        row = con.execute(
+            "SELECT 1 FROM membros WHERE user_id = ? AND papel = 'gestor' LIMIT 1",
+            (user_id,),
+        ).fetchone()
+    return row is not None
+
+
+def _pedidos_enviados(user_id: int) -> list:
+    with closing(db.ligar()) as con:
+        rows = con.execute(
+            """
+            SELECT un.id, un.nome
+            FROM membros m JOIN unidades un ON un.id = m.unidade_id
+            WHERE m.user_id = ? AND m.papel = 'pendente'
+            ORDER BY un.nome
+            """,
+            (user_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def _membros_da_unidade(unidade_id: int) -> list:
     with closing(db.ligar()) as con:
         rows = con.execute(
             """
             SELECT u.id, u.nome, u.email, m.papel
             FROM membros m JOIN users u ON u.id = m.user_id
-            WHERE m.unidade_id = ? ORDER BY m.papel, u.nome
+            WHERE m.unidade_id = ? AND m.papel != 'pendente'
+            ORDER BY m.papel, u.nome
+            """,
+            (unidade_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def _pendentes_da_unidade(unidade_id: int) -> list:
+    with closing(db.ligar()) as con:
+        rows = con.execute(
+            """
+            SELECT u.id, u.nome, u.email
+            FROM membros m JOIN users u ON u.id = m.user_id
+            WHERE m.unidade_id = ? AND m.papel = 'pendente'
+            ORDER BY m.criado_em
             """,
             (unidade_id,),
         ).fetchall()
@@ -94,11 +136,8 @@ def _definir_unidade_ativa(token: str, unidade_id) -> None:
 
 
 def _render_conta(request, utilizador, mensagem=None, erro=None):
+    # (a ativação automática da única unidade vive em auth.utilizador_atual)
     unidades = unidades_do_utilizador(utilizador["id"])
-    # se a sessão não tem unidade ativa e o utilizador só tem uma, ativa-a
-    if unidades and utilizador["unidade_ativa"] is None and len(unidades) == 1:
-        _definir_unidade_ativa(utilizador["token"], unidades[0]["id"])
-        utilizador["unidade_ativa"] = unidades[0]["id"]
 
     detalhe = []
     for unidade in unidades:
@@ -106,6 +145,7 @@ def _render_conta(request, utilizador, mensagem=None, erro=None):
         info["ativa"] = unidade["id"] == utilizador["unidade_ativa"]
         if unidade["papel"] == "gestor":
             info["membros"] = _membros_da_unidade(unidade["id"])
+            info["pendentes"] = _pendentes_da_unidade(unidade["id"])
             info["convite"] = _convite_ativo(unidade["id"])
             info["dados"] = _uploads_por_mes(unidade["id"])
         detalhe.append(info)
@@ -116,6 +156,8 @@ def _render_conta(request, utilizador, mensagem=None, erro=None):
         context={
             "utilizador": utilizador,
             "unidades": detalhe,
+            "pedidos_enviados": _pedidos_enviados(utilizador["id"]),
+            "e_gestor": _e_gestor_de_alguma(utilizador["id"]),
             "mensagem": mensagem,
             "erro": erro,
         },
@@ -259,7 +301,11 @@ def criar_unidade(request: Request, nome: str = Form(...)):
     _definir_unidade_ativa(utilizador["token"], unidade_id)
     utilizador["unidade_ativa"] = unidade_id
     return _render_conta(
-        request, utilizador, mensagem=f"Unidade «{nome}» criada — és o gestor."
+        request,
+        utilizador,
+        mensagem=f"Unidade «{nome}» criada — és o gestor. "
+        "Dica: usa o nome oficial da unidade tal como aparece nos ficheiros "
+        "do BI-CSP/MIM@UF, para os uploads ficarem guardados.",
     )
 
 
@@ -268,6 +314,14 @@ def juntar_unidade(request: Request, codigo: str = Form(...)):
     utilizador = auth.utilizador_atual(request)
     if utilizador is None:
         return RedirectResponse("/entrar", status_code=303)
+
+    if _e_gestor_de_alguma(utilizador["id"]):
+        return _render_conta(
+            request,
+            utilizador,
+            erro="Como gestor de uma unidade não te podes juntar a outra — "
+            "transfere primeiro a gestão a um membro.",
+        )
 
     codigo = codigo.strip()
     with closing(db.ligar()) as con:
@@ -280,24 +334,95 @@ def juntar_unidade(request: Request, codigo: str = Form(...)):
             return _render_conta(
                 request, utilizador, erro="Código de convite inválido ou expirado."
             )
-        ja_membro = con.execute(
-            "SELECT 1 FROM membros WHERE user_id = ? AND unidade_id = ?",
+        existente = con.execute(
+            "SELECT papel FROM membros WHERE user_id = ? AND unidade_id = ?",
             (utilizador["id"], convite["unidade_id"]),
         ).fetchone()
-        if ja_membro:
-            return _render_conta(
-                request, utilizador, erro="Já és membro dessa unidade."
+        if existente is not None:
+            erro = (
+                "Já tens um pedido pendente nessa unidade."
+                if existente["papel"] == "pendente"
+                else "Já és membro dessa unidade."
             )
+            return _render_conta(request, utilizador, erro=erro)
         con.execute(
-            "INSERT INTO membros (user_id, unidade_id, papel) VALUES (?, ?, 'membro')",
+            "INSERT INTO membros (user_id, unidade_id, papel) VALUES (?, ?, 'pendente')",
             (utilizador["id"], convite["unidade_id"]),
         )
         con.commit()
-        unidade_id = convite["unidade_id"]
 
-    _definir_unidade_ativa(utilizador["token"], unidade_id)
-    utilizador["unidade_ativa"] = unidade_id
-    return _render_conta(request, utilizador, mensagem="Juntaste-te à unidade.")
+    return _render_conta(
+        request,
+        utilizador,
+        mensagem="Pedido enviado — fica pendente até o gestor da unidade o aceitar.",
+    )
+
+
+@router.post(
+    "/conta/unidades/{unidade_id}/pedidos/{user_id}/aceitar",
+    response_class=HTMLResponse,
+)
+def aceitar_pedido(request: Request, unidade_id: int, user_id: int):
+    utilizador = auth.utilizador_atual(request)
+    if utilizador is None:
+        return RedirectResponse("/entrar", status_code=303)
+    if papel_na_unidade(utilizador["id"], unidade_id) != "gestor":
+        return _render_conta(
+            request, utilizador, erro="Só o gestor pode aceitar pedidos."
+        )
+
+    with closing(db.ligar()) as con:
+        con.execute(
+            "UPDATE membros SET papel = 'membro' "
+            "WHERE user_id = ? AND unidade_id = ? AND papel = 'pendente'",
+            (user_id, unidade_id),
+        )
+        con.commit()
+
+    return _render_conta(request, utilizador, mensagem="Pedido aceite — novo membro.")
+
+
+@router.post(
+    "/conta/unidades/{unidade_id}/pedidos/{user_id}/rejeitar",
+    response_class=HTMLResponse,
+)
+def rejeitar_pedido(request: Request, unidade_id: int, user_id: int):
+    utilizador = auth.utilizador_atual(request)
+    if utilizador is None:
+        return RedirectResponse("/entrar", status_code=303)
+    if papel_na_unidade(utilizador["id"], unidade_id) != "gestor":
+        return _render_conta(
+            request, utilizador, erro="Só o gestor pode rejeitar pedidos."
+        )
+
+    with closing(db.ligar()) as con:
+        con.execute(
+            "DELETE FROM membros "
+            "WHERE user_id = ? AND unidade_id = ? AND papel = 'pendente'",
+            (user_id, unidade_id),
+        )
+        con.commit()
+
+    return _render_conta(request, utilizador, mensagem="Pedido rejeitado.")
+
+
+@router.post(
+    "/conta/unidades/{unidade_id}/pedidos/cancelar", response_class=HTMLResponse
+)
+def cancelar_pedido(request: Request, unidade_id: int):
+    utilizador = auth.utilizador_atual(request)
+    if utilizador is None:
+        return RedirectResponse("/entrar", status_code=303)
+
+    with closing(db.ligar()) as con:
+        con.execute(
+            "DELETE FROM membros "
+            "WHERE user_id = ? AND unidade_id = ? AND papel = 'pendente'",
+            (utilizador["id"], unidade_id),
+        )
+        con.commit()
+
+    return _render_conta(request, utilizador, mensagem="Pedido cancelado.")
 
 
 @router.post("/conta/unidades/{unidade_id}/ativa", response_class=HTMLResponse)
@@ -305,7 +430,7 @@ def ativar_unidade(request: Request, unidade_id: int):
     utilizador = auth.utilizador_atual(request)
     if utilizador is None:
         return RedirectResponse("/entrar", status_code=303)
-    if papel_na_unidade(utilizador["id"], unidade_id) is None:
+    if papel_na_unidade(utilizador["id"], unidade_id) not in ("gestor", "membro"):
         return _render_conta(request, utilizador, erro="Não és membro dessa unidade.")
     _definir_unidade_ativa(utilizador["token"], unidade_id)
     utilizador["unidade_ativa"] = unidade_id
@@ -339,7 +464,45 @@ def gerar_convite(request: Request, unidade_id: int):
     return _render_conta(
         request,
         utilizador,
-        mensagem=f"Convite criado (válido {CONVITE_DIAS} dias) — partilha o código com os colegas.",
+        mensagem=f"Convite criado (válido {CONVITE_DIAS} dias) — quem o usar fica "
+        "pendente até aceitares o pedido.",
+    )
+
+
+@router.post(
+    "/conta/unidades/{unidade_id}/transferir/{membro_id}",
+    response_class=HTMLResponse,
+)
+def transferir_gestao(request: Request, unidade_id: int, membro_id: int):
+    utilizador = auth.utilizador_atual(request)
+    if utilizador is None:
+        return RedirectResponse("/entrar", status_code=303)
+    if papel_na_unidade(utilizador["id"], unidade_id) != "gestor":
+        return _render_conta(
+            request, utilizador, erro="Só o gestor pode transferir a gestão."
+        )
+    if papel_na_unidade(membro_id, unidade_id) != "membro":
+        return _render_conta(
+            request,
+            utilizador,
+            erro="A gestão só pode ser transferida para um membro da unidade.",
+        )
+
+    with closing(db.ligar()) as con:
+        con.execute(
+            "UPDATE membros SET papel = 'membro' "
+            "WHERE user_id = ? AND unidade_id = ?",
+            (utilizador["id"], unidade_id),
+        )
+        con.execute(
+            "UPDATE membros SET papel = 'gestor' "
+            "WHERE user_id = ? AND unidade_id = ?",
+            (membro_id, unidade_id),
+        )
+        con.commit()
+
+    return _render_conta(
+        request, utilizador, mensagem="Gestão transferida — agora és membro da unidade."
     )
 
 
@@ -355,7 +518,7 @@ def remover_membro(request: Request, unidade_id: int, membro_id: int):
         return _render_conta(
             request, utilizador, erro="Só o gestor da unidade pode remover membros."
         )
-    if papel_na_unidade(membro_id, unidade_id) == "gestor":
+    if papel_na_unidade(membro_id, unidade_id) != "membro":
         return _render_conta(
             request, utilizador, erro="O gestor não pode ser removido."
         )
@@ -423,13 +586,33 @@ def apagar_conta(request: Request):
         return RedirectResponse("/entrar", status_code=303)
 
     with closing(db.ligar()) as con:
-        # apaga também as unidades onde este utilizador é o único membro
+        # um gestor com outros membros tem de transferir a gestão primeiro,
+        # senão a unidade ficava sem ninguém para aprovar pedidos/gerir dados
+        bloqueio = con.execute(
+            """
+            SELECT un.nome FROM membros m JOIN unidades un ON un.id = m.unidade_id
+            WHERE m.user_id = ? AND m.papel = 'gestor'
+              AND EXISTS (SELECT 1 FROM membros m2
+                          WHERE m2.unidade_id = m.unidade_id
+                            AND m2.user_id != m.user_id
+                            AND m2.papel != 'pendente')
+            LIMIT 1
+            """,
+            (utilizador["id"],),
+        ).fetchone()
+        if bloqueio:
+            return _render_conta(
+                request,
+                utilizador,
+                erro=f"És gestor da unidade «{bloqueio['nome']}», que tem outros "
+                "membros — transfere a gestão antes de apagar a conta.",
+            )
+
+        # apaga também as unidades onde este utilizador é o único membro real
         orfas = con.execute(
             """
             SELECT m.unidade_id FROM membros m
-            WHERE m.user_id = ?
-              AND (SELECT COUNT(*) FROM membros m2
-                   WHERE m2.unidade_id = m.unidade_id) = 1
+            WHERE m.user_id = ? AND m.papel = 'gestor'
             """,
             (utilizador["id"],),
         ).fetchall()

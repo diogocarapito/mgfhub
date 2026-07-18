@@ -8,6 +8,12 @@
     {% if resumo.bicsp %}BI-CSP: {% for nome in resumo.bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
     {% if resumo.mimuf %} MIM@UF: {% for nome in resumo.mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
 </p>
+{% if resumo.sessao_bicsp or resumo.sessao_mimuf %}
+<p class="datasets-guardados">🕐 Só nesta sessão (outra unidade, não guardado):
+    {% for nome in resumo.sessao_bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}
+    {% for nome in resumo.sessao_mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}
+</p>
+{% endif %}
 {% elif utilizador %}
 <p class="datasets-guardados">⚠️ Sem unidade ativa — os dados desta sessão são temporários.
     Ativa ou cria uma unidade em <a href="/conta">Conta</a> para os guardar.</p>

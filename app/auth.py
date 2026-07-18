@@ -81,7 +81,26 @@ def utilizador_atual(request):
             con.execute("DELETE FROM sessoes WHERE token = ?", (token,))
             con.commit()
             return None
-        return dict(row)
+
+        utilizador = dict(row)
+
+        # sessão sem unidade ativa mas o utilizador pertence exatamente a uma
+        # (ex: pedido de adesão aceite entretanto) → ativa automaticamente
+        if utilizador["unidade_ativa"] is None:
+            unidades = con.execute(
+                "SELECT unidade_id FROM membros "
+                "WHERE user_id = ? AND papel != 'pendente'",
+                (utilizador["id"],),
+            ).fetchall()
+            if len(unidades) == 1:
+                utilizador["unidade_ativa"] = unidades[0]["unidade_id"]
+                con.execute(
+                    "UPDATE sessoes SET unidade_ativa = ? WHERE token = ?",
+                    (utilizador["unidade_ativa"], token),
+                )
+                con.commit()
+
+        return utilizador
 
 
 def anexar_cookie_login(response, token: str) -> None:

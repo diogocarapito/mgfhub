@@ -9,6 +9,15 @@
 {% if mensagem %}<article class="ok-msg">✅ {{ mensagem }}</article>{% endif %}
 {% if erro %}<article class="erro-upload">⚠️ {{ erro }}</article>{% endif %}
 
+{% for pedido in pedidos_enviados %}
+<article>
+    ⏳ Pedido de adesão a <strong>{{ pedido.nome }}</strong> pendente — aguarda a aprovação do gestor.
+    <form method="post" action="/conta/unidades/{{ pedido.id }}/pedidos/cancelar" class="inline">
+        <button class="secondary outline btn-pequeno">cancelar pedido</button>
+    </form>
+</article>
+{% endfor %}
+
 <h2>Unidades</h2>
 
 {% if not unidades %}
@@ -110,6 +119,27 @@
     <details>
         <summary>Gerir unidade</summary>
 
+        {% if unidade.pendentes %}
+        <h4>Pedidos de adesão</h4>
+        <ul>
+            {% for pedido in unidade.pendentes %}
+            <li>
+                {{ pedido.nome }} <small>({{ pedido.email }})</small>
+                <form method="post"
+                      action="/conta/unidades/{{ unidade.id }}/pedidos/{{ pedido.id }}/aceitar"
+                      class="inline">
+                    <button class="btn-pequeno">aceitar</button>
+                </form>
+                <form method="post"
+                      action="/conta/unidades/{{ unidade.id }}/pedidos/{{ pedido.id }}/rejeitar"
+                      class="inline">
+                    <button class="secondary outline btn-pequeno">rejeitar</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <h4>Convite</h4>
         {% if unidade.convite %}
         <p>Código ativo: <code>{{ unidade.convite.codigo }}</code>
@@ -132,6 +162,12 @@
                       class="inline">
                     <button class="secondary outline btn-pequeno">remover</button>
                 </form>
+                <form method="post"
+                      action="/conta/unidades/{{ unidade.id }}/transferir/{{ membro.id }}"
+                      class="inline"
+                      onsubmit="return confirm('Transferir a gestão da unidade para {{ membro.nome }}? Passas a ser membro.')">
+                    <button class="secondary outline btn-pequeno">tornar gestor</button>
+                </form>
                 {% endif %}
             </li>
             {% endfor %}
@@ -147,12 +183,12 @@
 </article>
 {% endfor %}
 
-{% if unidades %}
+{% if unidades and not e_gestor %}
 <details>
     <summary><small>Juntar-me a outra unidade</small></summary>
     <form method="post" action="/conta/unidades/juntar">
         <input type="text" name="codigo" placeholder="código de convite" required>
-        <button type="submit" class="btn-pequeno">Juntar</button>
+        <button type="submit" class="btn-pequeno">Pedir adesão</button>
     </form>
 </details>
 {% endif %}
