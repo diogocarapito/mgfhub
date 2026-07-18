@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}mgfhub{% endblock %}</title>
     <link rel="icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="/static/vendor/pico.min.css">
-    <link rel="stylesheet" href="/static/styles.css">
-    <script src="/static/vendor/htmx.min.js" defer></script>
-    <script src="/static/app.js" defer></script>
+    <link rel="stylesheet" href="/static/vendor/pico.min.css?v={{ v_estatica }}">
+    <link rel="stylesheet" href="/static/styles.css?v={{ v_estatica }}">
+    <script src="/static/vendor/htmx.min.js?v={{ v_estatica }}" defer></script>
+    <script src="/static/app.js?v={{ v_estatica }}" defer></script>
     {% block head_extra %}{% endblock %}
 </head>
 <body>
