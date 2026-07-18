@@ -1,0 +1,43 @@
+{% if aviso %}
+<p class="doc-vazio"><small>Sem dados do MIM@UF — os filtros aparecem após o upload.</small></p>
+
+{% else %}
+<form class="controlos" hx-get="/ide/indicador" hx-target="#ide-tabs" hx-swap="outerHTML" hx-trigger="change">
+    <label><small>Mês de análise</small>
+        <select name="dataset">
+            {% for d in datasets %}
+            <option value="{{ d }}" {% if d == dataset %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label><small>Indicador</small>
+        <select name="indicador">
+            {% for opcao in opcoes_indicador %}
+            <option value="{{ opcao }}" {% if opcao == indicador %}selected{% endif %}>{{ opcao }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <fieldset>
+        <legend>Visualização</legend>
+        <label><input type="radio" name="vista" value="Equipa" {% if vista == "Equipa" %}checked{% endif %}> Equipa</label>
+        <label><input type="radio" name="vista" value="Evolução temporal" {% if vista == "Evolução temporal" %}checked{% endif %}> Evolução temporal</label>
+    </fieldset>
+
+    {% if vista == "Equipa" %}
+    <fieldset>
+        <legend>Ordenar por</legend>
+        {% for o in ["Valor", "Numerador", "Denominador"] %}
+        <label><input type="radio" name="ordenar" value="{{ o }}" {% if o == ordenar %}checked{% endif %}> {{ o }}</label>
+        {% endfor %}
+    </fieldset>
+    {% else %}
+    <fieldset>
+        <legend>Tipo de visualização</legend>
+        <label><input type="radio" name="temporal" value="Unidade" {% if temporal_vista == "Unidade" %}checked{% endif %}> Unidade</label>
+        <label><input type="radio" name="temporal" value="Por profissional" {% if temporal_vista == "Por profissional" %}checked{% endif %}> Por profissional</label>
+    </fieldset>
+    {% endif %}
+</form>
+{% endif %}

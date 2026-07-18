@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import auth, db
+from app import auth, db, storage
 from app.templating import templates
 
 router = APIRouter()
@@ -70,6 +70,20 @@ def _convite_ativo(unidade_id: int):
     return dict(row) if row else None
 
 
+def _uploads_por_mes(unidade_id: int) -> list:
+    """Dados guardados agrupados por mês: uma linha por mês com as colunas
+    BI-CSP e MIM@UF lado a lado."""
+    por_mes = {}
+    for doc in storage.listar_uploads(unidade_id):
+        chave = f"{doc['ano']}-{doc['mes']}"
+        por_mes.setdefault(chave, {"bicsp": [], "mimuf": []})
+        por_mes[chave][doc["tipo"]].append(doc)
+    # mais recente primeiro
+    return [
+        {"mes": mes, **tipos} for mes, tipos in sorted(por_mes.items(), reverse=True)
+    ]
+
+
 def _definir_unidade_ativa(token: str, unidade_id) -> None:
     with closing(db.ligar()) as con:
         con.execute(
@@ -93,6 +107,7 @@ def _render_conta(request, utilizador, mensagem=None, erro=None):
         if unidade["papel"] == "gestor":
             info["membros"] = _membros_da_unidade(unidade["id"])
             info["convite"] = _convite_ativo(unidade["id"])
+            info["dados"] = _uploads_por_mes(unidade["id"])
         detalhe.append(info)
 
     return templates.TemplateResponse(
@@ -358,6 +373,26 @@ def remover_membro(request: Request, unidade_id: int, membro_id: int):
         con.commit()
 
     return _render_conta(request, utilizador, mensagem="Membro removido.")
+
+
+@router.post("/conta/unidades/{unidade_id}/uploads/apagar", response_class=HTMLResponse)
+def apagar_dados(
+    request: Request,
+    unidade_id: int,
+    tipo: str = Form(...),
+    nome: str = Form(...),
+):
+    utilizador = auth.utilizador_atual(request)
+    if utilizador is None:
+        return RedirectResponse("/entrar", status_code=303)
+    # qualquer membro pode carregar dados, mas só o gestor pode apagar
+    if papel_na_unidade(utilizador["id"], unidade_id) != "gestor":
+        return _render_conta(
+            request, utilizador, erro="Só o gestor da unidade pode apagar dados."
+        )
+
+    storage.apagar_upload(unidade_id, tipo, nome)
+    return _render_conta(request, utilizador, mensagem="Dados apagados.")
 
 
 @router.post("/conta/unidades/{unidade_id}/apagar", response_class=HTMLResponse)

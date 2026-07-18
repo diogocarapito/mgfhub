@@ -1,0 +1,22 @@
+{% if aviso %}
+<p class="doc-vazio"><small>Sem dados do MIM@UF — os filtros aparecem após o upload.</small></p>
+
+{% else %}
+<form class="controlos" hx-get="/ide/profissional" hx-target="#ide-tabs" hx-swap="outerHTML" hx-trigger="change">
+    <label><small>Dados para análise</small>
+        <select name="dataset">
+            {% for d in datasets %}
+            <option value="{{ d }}" {% if d == dataset %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label><small>Médico Familia</small>
+        <select name="medico">
+            {% for m in medicos %}
+            <option value="{{ m }}" {% if m == medico %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</form>
+{% endif %}

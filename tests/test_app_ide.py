@@ -32,7 +32,7 @@ def test_pagina_ide_sem_dados():
     client = TestClient(app)
     resp = client.get("/ide")
     assert resp.status_code == 200
-    assert "Excel do" in resp.text
+    assert 'id="upload-bicsp"' in resp.text
     assert "BI-CSP não carregados" in resp.text
     # estado vazio mostra o sunburst de demonstração
     assert "chart-demo" in resp.text

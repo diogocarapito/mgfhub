@@ -9,7 +9,7 @@ import io
 from contextlib import closing
 
 import pandas as pd
-from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import HTMLResponse
 
 from app import auth, db, session_store, storage
@@ -358,6 +358,8 @@ def ide_tab(request: Request, tab: str):
         tab = "unidade"
     dados, _ = _dados_e_utilizador(request)
     context = _CONTEXTOS[tab](dados, request.query_params)
+    # o fragmento atualiza também o painel de filtros (out-of-band)
+    context["oob_filtros"] = True
     return templates.TemplateResponse(
         request=request, name="partials/ide_tabs.html", context=context
     )
@@ -420,6 +422,7 @@ async def ide_upload(
         "utilizador": utilizador,
         "resumo": _resumo_sessao(dados, utilizador),
         "erros": erros + avisos,
+        "oob_filtros": True,
         **_ctx_unidade(dados, request.query_params),
     }
     response = templates.TemplateResponse(
@@ -430,25 +433,3 @@ async def ide_upload(
     if token:
         session_store.anexar_cookie(response, token)
     return response
-
-
-@router.post("/ide/uploads/apagar", response_class=HTMLResponse)
-def apagar_upload(request: Request, tipo: str = Form(...), nome: str = Form(...)):
-    utilizador = auth.utilizador_atual(request)
-    if not (utilizador and utilizador["unidade_ativa"]):
-        return HTMLResponse("", status_code=403)
-
-    storage.apagar_upload(utilizador["unidade_ativa"], tipo, nome)
-    dados = storage.carregar_uploads(utilizador["unidade_ativa"])
-
-    context = {
-        "utilizador": utilizador,
-        "resumo": _resumo_sessao(dados, utilizador),
-        "erros": [],
-        **_ctx_unidade(dados, request.query_params),
-    }
-    return templates.TemplateResponse(
-        request=request,
-        name="partials/ide_dashboard.html",
-        context=context,
-    )

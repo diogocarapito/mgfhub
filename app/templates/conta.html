@@ -13,6 +13,23 @@
 
 {% if not unidades %}
 <p>Ainda não pertences a nenhuma unidade. Cria uma (ficas gestor) ou junta-te com um código de convite.</p>
+
+<div class="lado-a-lado">
+    <article>
+        <h4>Criar unidade</h4>
+        <form method="post" action="/conta/unidades">
+            <input type="text" name="nome" placeholder="ex: USF Exemplo" required>
+            <button type="submit">Criar (fico gestor)</button>
+        </form>
+    </article>
+    <article>
+        <h4>Juntar-me a uma unidade</h4>
+        <form method="post" action="/conta/unidades/juntar">
+            <input type="text" name="codigo" placeholder="código de convite" required>
+            <button type="submit">Juntar</button>
+        </form>
+    </article>
+</div>
 {% endif %}
 
 {% for unidade in unidades %}
@@ -30,6 +47,66 @@
     </header>
 
     {% if unidade.papel == "gestor" %}
+    <h4>Dados guardados</h4>
+    {% if unidade.dados %}
+    <p><small>Qualquer membro pode carregar dados; só o gestor pode apagá-los.</small></p>
+    <div class="tabela-scroll">
+        <table class="tabela-dados-mes">
+            <thead>
+            <tr>
+                <th>Mês</th>
+                <th>BI-CSP</th>
+                <th>MIM@UF</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for linha in unidade.dados %}
+            <tr>
+                <td><strong>{{ linha.mes }}</strong></td>
+                <td>
+                    {% for doc in linha.bicsp %}
+                    <div class="doc-item">
+                        <span>{{ doc.nome }}</span>
+                        <form method="post"
+                              action="/conta/unidades/{{ unidade.id }}/uploads/apagar"
+                              class="inline"
+                              onsubmit="return confirm('Apagar «{{ doc.nome }}» (BI-CSP)?')">
+                            <input type="hidden" name="tipo" value="bicsp">
+                            <input type="hidden" name="nome" value="{{ doc.nome }}">
+                            <button class="secondary outline btn-pequeno">apagar</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <span class="doc-vazio">—</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for doc in linha.mimuf %}
+                    <div class="doc-item">
+                        <span>{{ doc.nome }}</span>
+                        <form method="post"
+                              action="/conta/unidades/{{ unidade.id }}/uploads/apagar"
+                              class="inline"
+                              onsubmit="return confirm('Apagar «{{ doc.nome }}» (MIM@UF)?')">
+                            <input type="hidden" name="tipo" value="mimuf">
+                            <input type="hidden" name="nome" value="{{ doc.nome }}">
+                            <button class="secondary outline btn-pequeno">apagar</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <span class="doc-vazio">—</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p><small class="doc-vazio">Ainda sem dados guardados — os uploads feitos no
+        <a href="/ide">IDE</a> pelos membros ficam listados aqui.</small></p>
+    {% endif %}
+
     <details>
         <summary>Gerir unidade</summary>
 
@@ -70,22 +147,15 @@
 </article>
 {% endfor %}
 
-<div class="lado-a-lado">
-    <article>
-        <h4>Criar unidade</h4>
-        <form method="post" action="/conta/unidades">
-            <input type="text" name="nome" placeholder="ex: USF Exemplo" required>
-            <button type="submit">Criar (fico gestor)</button>
-        </form>
-    </article>
-    <article>
-        <h4>Juntar-me a uma unidade</h4>
-        <form method="post" action="/conta/unidades/juntar">
-            <input type="text" name="codigo" placeholder="código de convite" required>
-            <button type="submit">Juntar</button>
-        </form>
-    </article>
-</div>
+{% if unidades %}
+<details>
+    <summary><small>Juntar-me a outra unidade</small></summary>
+    <form method="post" action="/conta/unidades/juntar">
+        <input type="text" name="codigo" placeholder="código de convite" required>
+        <button type="submit" class="btn-pequeno">Juntar</button>
+    </form>
+</details>
+{% endif %}
 
 <hr>
 <details>

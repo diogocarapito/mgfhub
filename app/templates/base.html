@@ -8,40 +8,42 @@
     <link rel="stylesheet" href="/static/vendor/pico.min.css">
     <link rel="stylesheet" href="/static/styles.css">
     <script src="/static/vendor/htmx.min.js" defer></script>
+    <script src="/static/app.js" defer></script>
     {% block head_extra %}{% endblock %}
 </head>
 <body>
-<header class="container">
-    <nav>
+<button id="toggle-nav" class="toggle-nav" aria-label="Mostrar/esconder navegação">☰</button>
+
+<aside class="nav-lateral">
+    <a href="/" class="marca"><strong>mgfhub</strong></a>
+
+    <nav aria-label="Navegação principal">
         <ul>
-            <li><a href="/" class="marca"><strong>mgfhub</strong></a></li>
-        </ul>
-        <ul>
-            <li><a href="/indicadores">Indicadores</a></li>
-            <li><a href="/ide">IDE</a></li>
-            {% if utilizador %}
-            <li><a href="/conta">{{ utilizador.nome.split(" ")[0] }}</a></li>
-            <li>
-                <form method="post" action="/sair" class="inline">
-                    <button class="secondary outline btn-pequeno">Sair</button>
-                </form>
-            </li>
-            {% else %}
-            <li><a href="/entrar" role="button" class="secondary outline btn-pequeno">Entrar</a></li>
-            {% endif %}
+            <li><a href="/">🏠 Início</a></li>
+            <li><a href="/indicadores">🔎 Indicadores</a></li>
+            <li><a href="/ide">📊 IDE</a></li>
         </ul>
     </nav>
-</header>
-<main class="container">
+
+    <div class="nav-fundo">
+        {% if utilizador %}
+        <a href="/conta">👤 {{ utilizador.nome.split(" ")[0] }}</a>
+        <form method="post" action="/sair" class="inline">
+            <button class="secondary outline btn-pequeno">Sair</button>
+        </form>
+        {% else %}
+        <a href="/entrar" role="button" class="secondary outline btn-pequeno">Entrar</a>
+        {% endif %}
+        <p class="nav-legal">
+            <a href="mailto:mgfhub.suporte@gmail.com">suporte</a> ·
+            <a href="/privacidade">privacidade</a> ·
+            <a href="/termos">termos</a>
+        </p>
+    </div>
+</aside>
+
+<main class="conteudo">
     {% block content %}{% endblock %}
 </main>
-<footer class="container">
-    <small>
-        Encontraste algum erro ou tens alguma sugestão?
-        <a href="mailto:mgfhub.suporte@gmail.com">mgfhub.suporte@gmail.com</a>
-        · <a href="/privacidade">Privacidade</a>
-        · <a href="/termos">Termos</a>
-    </small>
-</footer>
 </body>
 </html>

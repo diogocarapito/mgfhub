@@ -21,3 +21,9 @@
         {% include "partials/tab_profissional.html" %}
     {% endif %}
 </div>
+
+{% if oob_filtros %}
+<div id="ide-filtros" hx-swap-oob="true">
+    {% include "partials/ide_filtros.html" %}
+</div>
+{% endif %}

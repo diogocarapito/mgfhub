@@ -7,41 +7,48 @@
 {% endblock %}
 
 {% block content %}
-<h1>IDE</h1>
+<button id="toggle-aside" class="toggle-aside secondary outline"
+        aria-label="Mostrar/esconder uploads e filtros">⚙ uploads &amp; filtros</button>
 
-<section>
-    <form hx-post="/ide/upload"
-          hx-target="#ide-dashboard"
-          hx-encoding="multipart/form-data"
-          hx-indicator="#a-processar">
-        <div class="upload-grid">
-            <div>
+<div class="ide-layout">
+    <aside class="ide-aside">
+        <div>
+            <h4>Upload</h4>
+            <form hx-post="/ide/upload"
+                  hx-target="#ide-dashboard"
+                  hx-encoding="multipart/form-data"
+                  hx-indicator="#a-processar">
                 <label for="upload-bicsp">
-                    <strong>Excel do <a href="https://bicsp.min-saude.pt/pt/contratualizacao/idg/Paginas/default.aspx" target="_blank" rel="noopener">BI-CSP</a></strong>
+                    <small><strong><a href="https://bicsp.min-saude.pt/pt/contratualizacao/idg/Paginas/default.aspx"
+                        target="_blank" rel="noopener">BI-CSP</a></strong></small>
                 </label>
                 <input type="file" id="upload-bicsp" name="bicsp" accept=".xlsx" multiple>
-            </div>
-            <div>
-                <label for="upload-mimuf">
-                    <strong>Excel do MIM@UF</strong>
-                </label>
+
+                <label for="upload-mimuf"><small><strong>MIM@UF</strong></small></label>
                 <input type="file" id="upload-mimuf" name="mimuf" accept=".xlsx" multiple>
-            </div>
+
+                <button type="submit" class="btn-pequeno">Analisar</button>
+                <span id="a-processar" class="htmx-indicator" aria-busy="true">a processar…</span>
+            </form>
         </div>
-        <button type="submit">Analisar</button>
-        <span id="a-processar" class="htmx-indicator" aria-busy="true">a processar…</span>
-    </form>
 
-    <details>
-        <summary>Dicas</summary>
-        <p><strong>1 —</strong> Podes carregar mais do que um ficheiro do BI-CSP e/ou MIM@UF com períodos
-            diferentes, para comparar períodos e/ou unidades. Um novo upload substitui o anterior do mesmo tipo.</p>
-        <p><strong>2 —</strong> Os dados não ficam guardados no servidor do mgfhub: são processados em memória
-            e descartados ao fim de algumas horas de inatividade.</p>
-    </details>
-</section>
+        <div id="ide-filtros">
+            {% include "partials/ide_filtros.html" %}
+        </div>
 
-<div id="ide-dashboard">
-    {% include "partials/ide_dashboard.html" %}
+        <details>
+            <summary><small>Dicas</small></summary>
+            <p><small><strong>1 —</strong> Podes carregar vários ficheiros com períodos diferentes
+                para comparar períodos e/ou unidades.</small></p>
+            <p><small><strong>2 —</strong> Sem sessão iniciada, os dados são processados em memória
+                e descartados por inatividade — nada fica guardado no servidor.</small></p>
+        </details>
+    </aside>
+
+    <div class="ide-principal">
+        <div id="ide-dashboard">
+            {% include "partials/ide_dashboard.html" %}
+        </div>
+    </div>
 </div>
 {% endblock %}

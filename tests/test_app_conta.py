@@ -147,17 +147,53 @@ def test_upload_persistente_entre_sessoes_e_membros():
     assert "USF Fixture 06/2024" in resp.text
 
 
-def test_apagar_upload_da_unidade():
+def test_gestor_ve_tabela_de_dados_e_apaga():
     gestora = _registar("Ana Gestora", "ana@example.com")
     _criar_unidade(gestora, "USF Teste")
     _upload_bicsp(gestora)
 
+    # tabela por mês na conta: linha 2024-06 com o documento na coluna BI-CSP
+    resp = gestora.get("/conta")
+    assert "Dados guardados" in resp.text
+    assert "2024-06" in resp.text
+    assert "USF Fixture 06/2024" in resp.text
+
     resp = gestora.post(
-        "/ide/uploads/apagar",
+        "/conta/unidades/1/uploads/apagar",
         data={"tipo": "bicsp", "nome": "USF Fixture 06/2024"},
     )
-    assert "USF Fixture 06/2024" not in resp.text
-    assert "BI-CSP não carregados" in resp.text
+    assert "Dados apagados" in resp.text
+    assert "BI-CSP não carregados" in gestora.get("/ide").text
+
+
+def test_membro_nao_apaga_dados():
+    gestora = _registar("Ana Gestora", "ana@example.com")
+    _criar_unidade(gestora, "USF Teste")
+    _upload_bicsp(gestora)
+    codigo = _codigo_convite(gestora.post("/conta/unidades/1/convite").text)
+
+    membro = _registar("Bruno Membro", "bruno@example.com")
+    membro.post("/conta/unidades/juntar", data={"codigo": codigo})
+
+    resp = membro.post(
+        "/conta/unidades/1/uploads/apagar",
+        data={"tipo": "bicsp", "nome": "USF Fixture 06/2024"},
+    )
+    assert "Só o gestor" in resp.text
+    # os dados continuam lá
+    assert "USF Fixture 06/2024" in membro.get("/ide").text
+
+
+def test_criar_unidade_escondida_quando_ja_tem():
+    client = _registar("Ana Gestora", "ana@example.com")
+    # sem unidade: o formulário de criar aparece
+    assert "Criar (fico gestor)" in client.get("/conta").text
+
+    _criar_unidade(client, "USF Teste")
+    resp = client.get("/conta")
+    assert "Criar (fico gestor)" not in resp.text
+    # juntar-se a outra unidade continua acessível (recolhido)
+    assert "Juntar-me a outra unidade" in resp.text
 
 
 def test_anonimo_continua_temporario():

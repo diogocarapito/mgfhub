@@ -1,0 +1,55 @@
+{% if aviso %}
+<p class="doc-vazio"><small>Sem dados do BI-CSP — os filtros aparecem após o upload.</small></p>
+
+{% else %}
+<form class="controlos" hx-get="/ide/unidade" hx-target="#ide-tabs" hx-swap="outerHTML" hx-trigger="change">
+    <label><small>Dados para análise</small>
+        <select name="dataset">
+            {% for d in datasets %}
+            <option value="{{ d }}" {% if d == dataset %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    {% if dataset_2 %}
+    <label><small>2º dados (comparação)</small>
+        <select name="dataset2">
+            {% for d in datasets %}
+            <option value="{{ d }}" {% if d == dataset_2 %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
+
+    <fieldset>
+        <legend>Visualização</legend>
+        {% for v in vistas %}
+        <label><input type="radio" name="vista" value="{{ v }}" {% if v == vista %}checked{% endif %}> {{ v }}</label>
+        {% endfor %}
+    </fieldset>
+
+    {% if vista != "Dumbbell" %}
+    <label><small>Área clínica</small>
+        <select name="area" multiple size="3">
+            {% for a in areas_clinicas %}
+            <option value="{{ a }}" {% if a in areas %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <fieldset>
+        <legend>Score (0–2)</legend>
+        <div class="par-numeros">
+            <input type="number" name="score_min" value="{{ score_range[0] }}" min="0" max="2" step="0.1" aria-label="Score mínimo">
+            <input type="number" name="score_max" value="{{ score_range[1] }}" min="0" max="2" step="0.1" aria-label="Score máximo">
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Peso (1.2–10)</legend>
+        <div class="par-numeros">
+            <input type="number" name="peso_min" value="{{ peso_range[0] }}" min="1.2" max="10" step="0.2" aria-label="Peso mínimo">
+            <input type="number" name="peso_max" value="{{ peso_range[1] }}" min="1.2" max="10" step="0.2" aria-label="Peso máximo">
+        </div>
+    </fieldset>
+    {% endif %}
+</form>
+{% endif %}

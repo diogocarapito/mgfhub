@@ -3,53 +3,20 @@
 {% endfor %}
 
 {% if resumo.persistente %}
-<p><small>💾 Os dados ficam guardados na unidade <strong>{{ resumo.unidade_nome }}</strong>.
-    Ao carregar um mês novo, a análise temporal acumula; o mesmo mês volta a ser substituído.</small></p>
+<p class="datasets-guardados">💾 Dados guardados na unidade <strong>{{ resumo.unidade_nome }}</strong>
+    <small>(o gestor pode apagá-los em <a href="/conta">Conta</a>)</small> —
+    {% if resumo.bicsp %}BI-CSP: {% for nome in resumo.bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+    {% if resumo.mimuf %} MIM@UF: {% for nome in resumo.mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+</p>
 {% elif utilizador %}
-<p><small>⚠️ Sem unidade ativa — os dados desta sessão são temporários.
-    Ativa ou cria uma unidade em <a href="/conta">Conta</a> para os guardar.</small></p>
+<p class="datasets-guardados">⚠️ Sem unidade ativa — os dados desta sessão são temporários.
+    Ativa ou cria uma unidade em <a href="/conta">Conta</a> para os guardar.</p>
 {% elif resumo.bicsp or resumo.mimuf %}
-<p><small>Os dados desta sessão são temporários e descartados por inatividade.
-    <a href="/entrar">Entra</a> para os guardar na tua unidade.</small></p>
-{% endif %}
-
-{% if resumo.bicsp or resumo.mimuf %}
-<div class="datasets-guardados">
-    {% if resumo.bicsp %}
-    <div>
-        <small><strong>BI-CSP:</strong></small>
-        {% for nome in resumo.bicsp %}
-        <span class="chip">{{ nome }}
-            {% if resumo.persistente %}
-            <form hx-post="/ide/uploads/apagar" hx-target="#ide-dashboard"
-                  hx-confirm="Apagar «{{ nome }}» (BI-CSP) da unidade?" class="inline">
-                <input type="hidden" name="tipo" value="bicsp">
-                <input type="hidden" name="nome" value="{{ nome }}">
-                <button class="chip-apagar" aria-label="apagar">×</button>
-            </form>
-            {% endif %}
-        </span>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% if resumo.mimuf %}
-    <div>
-        <small><strong>MIM@UF:</strong></small>
-        {% for nome in resumo.mimuf %}
-        <span class="chip">{{ nome }}
-            {% if resumo.persistente %}
-            <form hx-post="/ide/uploads/apagar" hx-target="#ide-dashboard"
-                  hx-confirm="Apagar «{{ nome }}» (MIM@UF) da unidade?" class="inline">
-                <input type="hidden" name="tipo" value="mimuf">
-                <input type="hidden" name="nome" value="{{ nome }}">
-                <button class="chip-apagar" aria-label="apagar">×</button>
-            </form>
-            {% endif %}
-        </span>
-        {% endfor %}
-    </div>
-    {% endif %}
-</div>
+<p class="datasets-guardados">Os dados desta sessão são temporários e descartados por inatividade.
+    <a href="/entrar">Entra</a> para os guardar na tua unidade.
+    {% if resumo.bicsp %}· BI-CSP: {% for nome in resumo.bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+    {% if resumo.mimuf %}· MIM@UF: {% for nome in resumo.mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+</p>
 {% endif %}
 
 {% include "partials/ide_tabs.html" %}

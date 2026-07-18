@@ -1,0 +1,8 @@
+<h4>Filtros</h4>
+{% if tab == "unidade" %}
+    {% include "partials/filtros_unidade.html" %}
+{% elif tab == "indicador" %}
+    {% include "partials/filtros_indicador.html" %}
+{% else %}
+    {% include "partials/filtros_profissional.html" %}
+{% endif %}
