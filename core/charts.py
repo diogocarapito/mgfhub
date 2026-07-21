@@ -42,6 +42,14 @@ def build_sunburst_ide(df, ano, mes, unidade, size=800):
     """Sunburst da visão de unidade (dados BI-CSP já merged com a portaria)."""
     df["Impacto"] = df["Score"] * df["Ponderação"] / 2
 
+    # o CSV demo (sunburst_score_1.csv) pode não trazer os intervalos da
+    # portaria; linhas sem intervalos próprios (dimensões, IDE) mostram "N/A"
+    for col in (INT_ACEIT, INT_ESPER):
+        if col not in df.columns:
+            df[col] = "N/A"
+        else:
+            df[col] = df[col].fillna("N/A")
+
     fig = px.sunburst(
         df,
         names="Lable",

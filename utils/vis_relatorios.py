@@ -7,6 +7,8 @@ st.dataframe. Os gráficos matplotlib (ide_bar, horizontal_bar) ficam
 nesta camada até ao cutover — a v3 usa os equivalentes plotly do core.
 """
 
+import inspect
+
 import streamlit as st
 import matplotlib.pyplot as plt
 
@@ -20,26 +22,33 @@ from core.charts import (
 )
 from core.indicators import prepara_tabela_unidade
 
+# streamlit < 1.49 não tem o parâmetro width em st.plotly_chart: o kwarg
+# cairia em **kwargs (config plotly) e mostraria um aviso de deprecação
+if "width" in inspect.signature(st.plotly_chart).parameters:
+    _KW_LARGURA = {"width": "stretch"}
+else:
+    _KW_LARGURA = {"use_container_width": True}
+
 
 def sunburst_bicsp(df, ano, mes, unidade, size=800):
-    st.plotly_chart(build_sunburst_ide(df, ano, mes, unidade, size), width="stretch")
+    st.plotly_chart(build_sunburst_ide(df, ano, mes, unidade, size), **_KW_LARGURA)
 
 
 @st.cache_data()
 def sunburst_mimuf(df, ano, mes, unidade, size=800):
     st.plotly_chart(
-        build_sunburst_profissional(df, ano, mes, unidade, size), width="stretch"
+        build_sunburst_profissional(df, ano, mes, unidade, size), **_KW_LARGURA
     )
 
 
 @st.cache_data()
 def dumbbell_plot(dict_dfs, ano):
-    st.plotly_chart(build_dumbbell(dict_dfs), width="stretch")
+    st.plotly_chart(build_dumbbell(dict_dfs), **_KW_LARGURA)
 
 
 @st.cache_data()
 def line_chart(df, filtro_visualização):
-    st.plotly_chart(build_evolucao_temporal(df, filtro_visualização), width="stretch")
+    st.plotly_chart(build_evolucao_temporal(df, filtro_visualização), **_KW_LARGURA)
 
 
 @st.cache_data()
