@@ -4,6 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}mgfhub{% endblock %}</title>
+    <script>
+        // aplica o tema guardado antes da primeira pintura (evita flash)
+        (function () {
+            var guardado = localStorage.getItem("mgfhub-tema");
+            var tema = guardado || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.dataset.theme = tema;
+        })();
+    </script>
     <link rel="icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/vendor/pico.min.css?v={{ v_estatica }}">
     <link rel="stylesheet" href="/static/styles.css?v={{ v_estatica }}">
@@ -12,46 +20,64 @@
     {% block head_extra %}{% endblock %}
 </head>
 <body>
-<button id="toggle-nav" class="toggle-nav" aria-label="Mostrar/esconder navegação">☰</button>
-
 <aside class="nav-lateral">
-    <a href="/" class="marca">mgfhub</a>
+    <!-- secção 1 — marca + navegação principal -->
+    <div class="nav-topo">
+        <a href="/" class="marca">mgfhub</a>
 
-    <nav aria-label="Navegação principal">
-        <ul>
-            <li><a href="/" {% if request.url.path == "/" %}class="ativo"{% endif %}>
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
-                Início</a></li>
-            <li><a href="/indicadores" {% if request.url.path.startswith("/indicadores") %}class="ativo"{% endif %}>
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                Indicadores</a></li>
-            <li><a href="/ide" {% if request.url.path.startswith("/ide") %}class="ativo"{% endif %}>
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2 20h20"/></svg>
-                IDE</a></li>
-        </ul>
-    </nav>
+        <nav aria-label="Navegação principal">
+            <ul>
+                <li><a href="/" {% if request.url.path == "/" %}class="ativo"{% endif %}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+                    Início</a></li>
+                <li><a href="/indicadores" {% if request.url.path.startswith("/indicadores") %}class="ativo"{% endif %}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    Indicadores</a></li>
+                <li><a href="/ide" {% if request.url.path.startswith("/ide") %}class="ativo"{% endif %}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M2 20h20"/></svg>
+                    IDE</a></li>
+            </ul>
+        </nav>
+    </div>
 
+    <hr class="nav-sep">
+
+    <!-- secção 2 — espaço flexível -->
+    <div class="nav-meio"></div>
+
+    <hr class="nav-sep">
+
+    <!-- secção 3 — tema + sessão -->
     <div class="nav-fundo">
+        <button type="button" id="tema-toggle" class="nav-botao" aria-label="Alternar modo claro/escuro">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <span data-tema-label>Modo escuro</span></button>
+
         {% if utilizador %}
-        <a href="/conta">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
-            {{ utilizador.nome.split(" ")[0] }}</a>
-        <form method="post" action="/sair" class="inline">
-            <button class="secondary outline btn-pequeno">Sair</button>
+        <a href="/conta" {% if request.url.path.startswith("/conta") %}class="ativo"{% endif %}>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Definições</a>
+        <form method="post" action="/sair">
+            <button type="submit" class="nav-botao">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+                Sair</button>
         </form>
         {% else %}
-        <a href="/entrar" role="button" class="secondary outline btn-pequeno">Entrar</a>
+        <a href="/entrar" {% if request.url.path.startswith("/entrar") %}class="ativo"{% endif %}>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+            Entrar</a>
         {% endif %}
-        <p class="nav-legal">
-            <a href="mailto:mgfhub.suporte@gmail.com">suporte</a> ·
-            <a href="/privacidade">privacidade</a> ·
-            <a href="/termos">termos</a>
-        </p>
     </div>
 </aside>
 
 <main class="conteudo">
-    {% block content %}{% endblock %}
+    <div class="conteudo-interior">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="rodape">
+        mgfhub 2026 &reg; · <a href="/suporte">Suporte</a> · <a href="/privacidade">Privacidade</a> · <a href="/termos">Termos</a>
+    </footer>
 </main>
 </body>
 </html>

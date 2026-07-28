@@ -1,24 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<hgroup>
-    <h1>mgfhub</h1>
-    <p>Ferramenta de pesquisa e análise de indicadores dos Cuidados de Saúde Primários portugueses</p>
-</hgroup>
+<div class="intro-home">
+    <hgroup>
+        <h1>mgfhub</h1>
+        <p>Ferramenta de pesquisa e análise de indicadores dos Cuidados de Saúde Primários portugueses</p>
+    </hgroup>
 
-<div class="cartoes-home">
-    {% for cartao in cartoes %}
-    <article>
-        <header>
-            <strong>{{ cartao.icon }} {{ cartao.titulo }}</strong>
-            {% if cartao.em_construcao %}<mark class="tag">em construção</mark>{% endif %}
-            {% if not cartao.rota and not cartao.em_construcao %}<mark class="tag">brevemente na v3</mark>{% endif %}
-        </header>
-        <p>{{ cartao.texto }}</p>
-        {% if cartao.rota %}
-        <a href="{{ cartao.rota }}" role="button">Abrir</a>
-        {% endif %}
-    </article>
-    {% endfor %}
+    <p>O mgfhub é uma plataforma de acesso aberto que disponibiliza informação e
+    relatórios automáticos sobre os indicadores dos Cuidados de Saúde Primários
+    portugueses.</p>
+
+    <p>Na secção <strong>Indicadores</strong> pode pesquisar entre os mais de 460
+    indicadores existentes, filtrando por IDE, IDG ou todos.</p>
+
+    <p>Na secção <strong>IDE</strong> pode gerar relatórios automáticos sobre a
+    performance dos indicadores de uma unidade ou de um profissional, com
+    visualizações detalhadas, comparação temporal e filtros, a partir do upload
+    de uma tabela do BI-CSP e outra do MIM@UF.</p>
 </div>
 {% endblock %}
