@@ -19,7 +19,7 @@
     <script src="/static/app.js?v={{ v_estatica }}" defer></script>
     {% block head_extra %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <aside class="nav-lateral">
     <!-- secção 1 — marca + navegação principal -->
     <div class="nav-topo">
@@ -42,8 +42,10 @@
 
     <hr class="nav-sep">
 
-    <!-- secção 2 — espaço flexível -->
-    <div class="nav-meio"></div>
+    <!-- secção 2 — espaço flexível (conteúdo por página, ex.: upload no IDE) -->
+    <div class="nav-meio">
+        {% block nav_meio %}{% endblock %}
+    </div>
 
     <hr class="nav-sep">
 
@@ -76,7 +78,7 @@
     </div>
 
     <footer class="rodape">
-        mgfhub 2026 &reg; · <a href="/suporte">Suporte</a> · <a href="/privacidade">Privacidade</a> · <a href="/termos">Termos</a>
+        mgfhub &reg; 2026 · <a href="/suporte">Suporte</a> · <a href="/privacidade">Privacidade</a> · <a href="/termos">Termos</a>
     </footer>
 </main>
 </body>

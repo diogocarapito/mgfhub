@@ -2,36 +2,57 @@
 
 {% block title %}IDE — mgfhub{% endblock %}
 
+{% block body_class %}modo-dashboard{% endblock %}
+
 {% block head_extra %}
 <script src="/static/vendor/plotly.min.js?v={{ v_estatica }}" defer></script>
 {% endblock %}
 
+{# upload dos ficheiros do IDE — vive na secção do meio da barra lateral #}
+{% block nav_meio %}
+<form class="nav-upload"
+      hx-post="/ide/upload"
+      hx-target="#ide-dashboard"
+      hx-encoding="multipart/form-data"
+      hx-indicator="#a-processar">
+    <h4>Upload</h4>
+
+    <div class="upload-campo">
+        <span class="upload-titulo"><a href="https://bicsp.min-saude.pt/pt/contratualizacao/idg/Paginas/default.aspx"
+            target="_blank" rel="noopener">BI-CSP</a></span>
+        <label class="file-drop" for="upload-bicsp">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <span data-ficheiro-label>Escolher ficheiros</span>
+        </label>
+        <input class="upload-input" type="file" id="upload-bicsp" name="bicsp" accept=".xlsx" multiple
+               aria-label="Ficheiros BI-CSP">
+        <ul class="ficheiros-lista"></ul>
+    </div>
+
+    <div class="upload-campo">
+        <span class="upload-titulo">MIM@UF</span>
+        <label class="file-drop" for="upload-mimuf">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <span data-ficheiro-label>Escolher ficheiros</span>
+        </label>
+        <input class="upload-input" type="file" id="upload-mimuf" name="mimuf" accept=".xlsx" multiple
+               aria-label="Ficheiros MIM@UF">
+        <ul class="ficheiros-lista"></ul>
+    </div>
+
+    <span id="a-processar" class="htmx-indicator" aria-busy="true">a atualizar…</span>
+</form>
+{% endblock %}
+
 {% block content %}
-<button id="toggle-aside" class="toggle-aside secondary outline"
-        aria-label="Mostrar/esconder uploads e filtros">⚙ uploads &amp; filtros</button>
-
 <div class="ide-layout">
-    <aside class="ide-aside">
-        <div>
-            <h4>Upload</h4>
-            <form hx-post="/ide/upload"
-                  hx-target="#ide-dashboard"
-                  hx-encoding="multipart/form-data"
-                  hx-indicator="#a-processar">
-                <label for="upload-bicsp">
-                    <small><strong><a href="https://bicsp.min-saude.pt/pt/contratualizacao/idg/Paginas/default.aspx"
-                        target="_blank" rel="noopener">BI-CSP</a></strong></small>
-                </label>
-                <input type="file" id="upload-bicsp" name="bicsp" accept=".xlsx" multiple>
-
-                <label for="upload-mimuf"><small><strong>MIM@UF</strong></small></label>
-                <input type="file" id="upload-mimuf" name="mimuf" accept=".xlsx" multiple>
-
-                <button type="submit" class="btn-pequeno">Analisar</button>
-                <span id="a-processar" class="htmx-indicator" aria-busy="true">a processar…</span>
-            </form>
+    <div class="ide-principal">
+        <div id="ide-dashboard">
+            {% include "partials/ide_dashboard.html" %}
         </div>
+    </div>
 
+    <aside class="ide-aside">
         <div id="ide-filtros">
             {% include "partials/ide_filtros.html" %}
         </div>
@@ -44,11 +65,5 @@
                 e descartados por inatividade — nada fica guardado no servidor.</small></p>
         </details>
     </aside>
-
-    <div class="ide-principal">
-        <div id="ide-dashboard">
-            {% include "partials/ide_dashboard.html" %}
-        </div>
-    </div>
 </div>
 {% endblock %}

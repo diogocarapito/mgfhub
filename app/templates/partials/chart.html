@@ -3,8 +3,23 @@
 <script>
     (function () {
         function render() {
+            var el = document.getElementById("{{ chart_id }}");
+            if (!el) return;
             var dados = JSON.parse(document.getElementById("dados-{{ chart_id }}").textContent);
-            Plotly.newPlot("{{ chart_id }}", dados.data, dados.layout, {responsive: true, displaylogo: false});
+            dados.layout = dados.layout || {};
+            // deixa o gráfico preencher o contentor (dashboard responsivo)
+            dados.layout.autosize = true;
+            delete dados.layout.width;
+            delete dados.layout.height;
+            Plotly.newPlot(el, dados.data, dados.layout, {responsive: true, displaylogo: false});
+            // ajusta ao tamanho real do contentor (o layout flex pode só
+            // estabilizar depois do render) e a cada mudança de tamanho
+            var ajustar = function () { if (el._fullLayout) Plotly.Plots.resize(el); };
+            requestAnimationFrame(ajustar);
+            setTimeout(ajustar, 150);
+            if (window.ResizeObserver && el.parentElement) {
+                new ResizeObserver(ajustar).observe(el.parentElement);
+            }
         }
         if (window.Plotly) { render(); } else { document.addEventListener("DOMContentLoaded", render); }
     })();

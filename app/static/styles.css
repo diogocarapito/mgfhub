@@ -16,12 +16,13 @@
     --acento-tinta: rgba(10, 166, 184, 0.09);
     --acento-foco: rgba(10, 166, 184, 0.28);
     --sombra: none;
-    --marca-grad: linear-gradient(120deg, #588ef9, rgba(8,184,142,1.0));
+    --marca-grad: linear-gradient(120deg, #588ef9, rgba(8,224,142,1.0));
     --ok: #2e7d32;
     --erro: #b3261e;
 
-    --nav-largura: 12.5rem;
+    --nav-largura: 14.5rem;
     --aside-largura: 16.5rem;
+    --rodape-altura: 2.6rem;
 
     /* pico — espaçamento e cantos mais generosos (estética mdkb) */
     --pico-font-size: 100%;
@@ -182,6 +183,174 @@ article > header {
     min-height: 0.5rem;
 }
 
+/* formulário de upload do IDE, alojado na secção do meio da barra lateral */
+.nav-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0 0.15rem;
+    text-align: left;
+}
+
+.nav-upload h4 {
+    margin: 0 0 0.15rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--suave);
+}
+
+.upload-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.upload-titulo {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.upload-titulo a {
+    color: var(--acento);
+    text-decoration: none;
+}
+
+.upload-titulo a:hover {
+    text-decoration: underline;
+}
+
+/* input nativo escondido (mas acessível) — o clique passa pela label estilizada */
+.upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* zona de upload compacta e visual — substitui o input nativo */
+.file-drop {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px dashed var(--borda);
+    border-radius: 0.6rem;
+    background: var(--fundo);
+    color: var(--suave);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.file-drop:hover {
+    border-color: var(--acento);
+    color: var(--acento);
+    background: var(--acento-tinta);
+}
+
+.file-drop svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+.file-drop span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* os filhos não capturam eventos de drag — evita o "piscar" do dragleave */
+.file-drop > * {
+    pointer-events: none;
+}
+
+/* estado com ficheiro(s) escolhido(s) */
+.file-drop.tem-ficheiro {
+    border-style: solid;
+    border-color: var(--acento);
+    color: var(--acento);
+    background: var(--acento-tinta);
+}
+
+/* a arrastar um ficheiro por cima da zona */
+.file-drop.a-arrastar {
+    border-style: solid;
+    border-color: var(--acento);
+    color: var(--acento);
+    background: var(--acento-tinta);
+    box-shadow: 0 0 0 3px var(--acento-tinta);
+}
+
+/* lista dos ficheiros carregados, com remoção individual */
+.ficheiros-lista {
+    list-style: none;
+    margin: 0.15rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ficheiros-lista li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.3rem 0.25rem 0.5rem;
+    border-radius: 0.4rem;
+    background: var(--acento-tinta);
+    font-size: 0.72rem;
+    color: var(--texto);
+}
+
+.ficheiro-nome {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ficheiro-remover {
+    flex-shrink: 0;
+    width: 1.15rem;
+    height: 1.15rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--suave);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.ficheiro-remover:hover {
+    background: var(--erro);
+    color: #fff;
+}
+
+/* indicador de processamento por baixo dos uploads (sem botão — auto-submit) */
+.nav-upload .htmx-indicator {
+    margin: 0.2rem 0 0;
+    font-size: 0.72rem;
+    color: var(--suave);
+}
+
 /* itens de navegação — partilhados pela nav principal e pela secção de baixo */
 .nav-lateral nav ul {
     list-style: none;
@@ -273,19 +442,23 @@ article > header {
 
 .conteudo {
     margin-left: var(--nav-largura);
-    padding: 3.25rem 2rem 2rem;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    /* padding-bottom deixa espaço para o rodapé fixo não tapar conteúdo */
+    padding: 3.25rem 2rem 4.5rem;
 }
 
-/* rodapé da área principal — empurrado para o fundo em páginas curtas */
+/* rodapé permanente — fixo no fundo da área principal, sempre visível */
 .rodape {
-    margin-top: auto;
-    padding-top: 3rem;
+    position: fixed;
+    left: var(--nav-largura);
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 0.7rem 1rem;
     text-align: center;
     font-size: 0.78rem;
     color: var(--suave);
+    background: var(--fundo);
+    border-top: 1px solid var(--borda);
 }
 
 .rodape a {
@@ -352,7 +525,12 @@ article > header {
 
     .conteudo {
         margin-left: 0;
-        padding: 1.5rem 1.1rem 2.5rem;
+        padding: 1.5rem 1.1rem 4rem;
+    }
+
+    /* nav vira barra no topo — o rodapé fixo ocupa toda a largura */
+    .rodape {
+        left: 0;
     }
 }
 
@@ -487,7 +665,8 @@ tbody td {
 
 .ide-layout {
     display: grid;
-    grid-template-columns: var(--aside-largura) 1fr;
+    /* conteúdo ao centro, filtros fixos à direita */
+    grid-template-columns: 1fr var(--aside-largura);
     gap: 1.75rem;
     align-items: start;
 }
@@ -503,7 +682,7 @@ tbody td {
     border: 1px solid var(--borda);
     border-radius: var(--pico-border-radius);
     box-shadow: var(--sombra);
-    max-height: calc(100vh - 1.5rem);
+    max-height: calc(100vh - 5rem);
     overflow-y: auto;
     font-size: 0.85rem;
 }
@@ -530,31 +709,6 @@ tbody td {
     font-weight: 650;
 }
 
-body.aside-recolhido .ide-layout {
-    grid-template-columns: 1fr;
-}
-
-body.aside-recolhido .ide-aside {
-    display: none;
-}
-
-.toggle-aside {
-    width: auto;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.8rem;
-    margin: 0 0 0.6rem 0;
-    background: var(--painel);
-    color: var(--suave);
-    border: 1px solid var(--borda);
-    border-radius: 0.45rem;
-    box-shadow: none;
-}
-
-.toggle-aside:hover {
-    color: var(--acento);
-    border-color: var(--acento);
-}
-
 @media (max-width: 992px) {
     .ide-layout {
         grid-template-columns: 1fr;
@@ -571,10 +725,10 @@ body.aside-recolhido .ide-aside {
 .ide-nav ul {
     display: inline-flex;
     gap: 0.2rem;
-    padding: 0.2rem;
-    margin: 0 0 0.75rem 0;
+    padding: 0.25rem;
+    margin: 0 0 1.75rem 0;
     background: var(--acento-tinta);
-    border-radius: 0.6rem;
+    border-radius: 0.7rem;
     flex-wrap: wrap;
     list-style: none;
 }
@@ -667,6 +821,153 @@ body.aside-recolhido .ide-aside {
     overflow-x: auto;
 }
 
+/* -------------------------------------------------- modo dashboard (IDE)
+   preenche a viewport sem scroll; o gráfico ocupa o espaço restante e
+   redimensiona com a janela. métricas e tabs mais compactas para dar
+   mais área ao gráfico. */
+
+body.modo-dashboard {
+    overflow: hidden;
+}
+
+body.modo-dashboard .conteudo {
+    height: 100vh;
+    padding: 1.25rem 1.5rem calc(var(--rodape-altura) + 0.6rem);
+    /* normalmente tudo cabe (sem scroll); em janelas muito baixas o gráfico
+       fica no seu mínimo e a área principal ganha scroll em vez de partir */
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+body.modo-dashboard .conteudo-interior {
+    max-width: none;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+/* cadeia de alturas até ao gráfico */
+body.modo-dashboard .ide-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    /* as colunas esticam para a altura toda (base usa align-items: start) */
+    align-items: stretch;
+    gap: 1.25rem;
+}
+
+body.modo-dashboard .ide-principal {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.modo-dashboard .ide-aside {
+    position: static;
+    height: 100%;
+    max-height: none;
+    align-self: stretch;
+}
+
+body.modo-dashboard #ide-dashboard {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.modo-dashboard #ide-tabs {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* mensagens/nav/métricas não crescem nem encolhem — o gráfico é que
+   absorve o espaço (NÃO incluir #ide-tabs aqui: esse tem de crescer) */
+body.modo-dashboard .datasets-guardados,
+body.modo-dashboard .erro-upload,
+body.modo-dashboard .ok-msg,
+body.modo-dashboard #ide-tabs > .ide-nav,
+body.modo-dashboard #ide-tabs > .aviso,
+body.modo-dashboard #ide-tabs > p,
+body.modo-dashboard .metricas {
+    flex: none;
+}
+
+/* menu de tabs mais baixo */
+body.modo-dashboard .ide-nav ul {
+    margin: 0 0 0.9rem 0;
+    padding: 0.18rem;
+}
+
+body.modo-dashboard .ide-nav button {
+    padding: 0.2rem 0.7rem;
+    font-size: 0.8rem;
+}
+
+/* métricas num contentor mais pequeno */
+body.modo-dashboard .metricas {
+    margin: 0 0 0.9rem;
+    gap: 0.5rem;
+}
+
+body.modo-dashboard .metrica {
+    padding: 0.35rem 0.6rem;
+}
+
+body.modo-dashboard .metrica strong {
+    font-size: 1.15rem;
+}
+
+body.modo-dashboard .metrica > small:first-child {
+    font-size: 0.62rem;
+}
+
+/* área do gráfico ocupa o espaço restante; tem um mínimo (o plotly não
+   consegue desenhar abaixo de um certo tamanho — evita o erro de escala) */
+body.modo-dashboard .graficos-scroll {
+    flex: 1;
+    min-height: 24rem;
+    overflow: visible;
+}
+
+body.modo-dashboard .grafico {
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+/* gráfico dentro da zona de scroll (com métricas) preenche a altura */
+body.modo-dashboard .graficos-scroll .grafico {
+    height: 100%;
+}
+
+/* modo demo: o gráfico está diretamente dentro de #ide-tabs */
+body.modo-dashboard #ide-tabs > .grafico {
+    flex: 1;
+    min-height: 24rem;
+    height: auto;
+}
+
+/* em ecrãs estreitos volta ao fluxo normal com scroll (nav no topo) */
+@media (max-width: 992px) {
+    body.modo-dashboard,
+    body.modo-dashboard .conteudo {
+        height: auto;
+        overflow: visible;
+    }
+
+    body.modo-dashboard .grafico {
+        height: auto;
+        min-height: 22rem;
+    }
+}
+
 .htmx-indicator {
     display: none;
     margin-left: 0.5rem;
@@ -724,8 +1025,68 @@ body.aside-recolhido .ide-aside {
     border-radius: 0.4rem;
 }
 
+/* páginas de documento (privacidade, termos) — coluna de leitura à
+   esquerda, alinhada entre título e texto (escapa ao centrado global) */
+.doc {
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.doc > h1 {
+    margin-bottom: 2rem;
+}
+
 .texto-legal {
-    max-width: 46rem;
+    color: var(--texto);
+}
+
+.texto-legal h2 {
+    margin: 2.25rem 0 0.75rem;
+    font-size: 1.2rem;
+}
+
+.texto-legal h3 {
+    margin: 1.75rem 0 0.5rem;
+    font-size: 1.05rem;
+}
+
+.texto-legal p {
+    margin: 0 0 1.1rem;
+    line-height: 1.75;
+}
+
+.texto-legal ul,
+.texto-legal ol {
+    margin: 0 0 1.2rem;
+    padding-left: 1.4rem;
+}
+
+.texto-legal li {
+    margin: 0.45rem 0;
+    line-height: 1.65;
+}
+
+.texto-legal li::marker {
+    color: var(--acento);
+}
+
+.texto-legal strong {
+    color: var(--texto);
+    font-weight: 650;
+}
+
+.texto-legal a {
+    color: var(--acento);
+}
+
+.texto-legal hr {
+    border: none;
+    border-top: 1px solid var(--borda);
+    margin: 2.25rem 0;
 }
 
 .tabela-dados-mes td {

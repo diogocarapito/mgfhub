@@ -3,8 +3,10 @@
 {% block title %}{{ titulo }} — mgfhub{% endblock %}
 
 {% block content %}
-<h1>{{ titulo }}</h1>
-<div class="texto-legal">
-    {{ conteudo | safe }}
-</div>
+<article class="doc">
+    <h1>{{ titulo }}</h1>
+    <div class="texto-legal">
+        {{ conteudo | safe }}
+    </div>
+</article>
 {% endblock %}
