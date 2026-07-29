@@ -940,6 +940,10 @@ body.modo-dashboard .graficos-scroll {
 body.modo-dashboard .grafico {
     min-height: 0;
     margin-bottom: 0;
+    /* o plotly dimensiona o svg à caixa-borda; sem padding + clip garante
+       que o gráfico fica exatamente dentro do cartão (não transborda) */
+    padding: 0;
+    overflow: hidden;
 }
 
 /* gráfico dentro da zona de scroll (com métricas) preenche a altura */

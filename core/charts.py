@@ -281,7 +281,7 @@ def build_dumbbell(dict_dfs):
         ),
         yaxis=dict(
             autorange="reversed",
-            tickfont=dict(size=18),
+            tickfont=dict(size=12),
         ),
         height=each["df"].shape[0] * 25 + 300,
         legend=dict(
