@@ -1,20 +1,43 @@
+import io
+
 import streamlit as st
+from PIL import Image
+
+# Streamlit downsizes any image wider than this before serving it, and it redoes that
+# work on every rerun. Screenshots are resized once here and cached as bytes instead.
+# Note: only cache data like this - caching a function that draws st elements makes
+# Streamlit replay them on st._main instead of the layout block they were written to.
+LARGURA_MAXIMA = 1460
 
 
-@st.cache_data()
+@st.cache_data(show_spinner=False)
+def carregar_imagem(caminho):
+    with open(caminho, "rb") as ficheiro:
+        dados = ficheiro.read()
+
+    imagem = Image.open(io.BytesIO(dados))
+    if imagem.width <= LARGURA_MAXIMA:
+        return dados
+
+    altura = round(imagem.height * LARGURA_MAXIMA / imagem.width)
+    imagem = imagem.resize((LARGURA_MAXIMA, altura), Image.Resampling.LANCZOS)
+    tampao = io.BytesIO()
+    imagem.save(tampao, format="PNG")
+    return tampao.getvalue()
+
+
 def tutorial_loop(tutorial):
     # loop through the content and create a card for each row
     for i, each in enumerate(tutorial):
         # for each in tutorial:
         st.write(each["texto"])
         if each["imagem"]:
-            st.image(each["imagem"], width="stretch")
+            st.image(carregar_imagem(each["imagem"]), width="stretch")
         # show a divider between each step, except for the last one
         if i != len(tutorial) - 1:
             st.write("")
 
 
-@st.cache_data()
 def tutorial_expander(tutorial):
     col_tutorial_1, col_tutorial_2, col_tutorial_3 = st.columns([1, 4, 1])
 
@@ -28,7 +51,6 @@ def tutorial_expander(tutorial):
         st.write("")
 
 
-@st.cache_data()
 def tutorial_bicsp():
     tutorial = [
         {
@@ -66,7 +88,6 @@ def tutorial_bicsp():
     tutorial_expander(tutorial)
 
 
-@st.cache_data()
 def tutorial_mimuf_depois_11_2025():
     tutorial = [
         {
@@ -146,11 +167,10 @@ def tutorial_mimuf_depois_11_2025():
     st.success(
         "O tutorial do MIM@UF depois de Novembro de 2025 já inclui a funcionalidade de drag-and-drop de filtros para colunas, pelo que não é necessário fazer upload de ficheiros com apenas 1 médico. Basta extrair todos os médicos como dantes. Pode ser necessário corrigir algumas linhas unificadas na folha de cálculo, conforme explicado no tutorial."
     )
-    
+
     tutorial_expander(tutorial)
-    
-    
-@st.cache_data()
+
+
 def tutorial_mimuf():
     tutorial = [
         {
@@ -249,7 +269,6 @@ def tutorial_mimuf():
     tutorial_expander(tutorial)
 
 
-@st.cache_data()
 def tutorial_mimuf_antigo():
     tutorial = [
         {
