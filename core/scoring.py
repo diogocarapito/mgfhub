@@ -86,11 +86,10 @@ def merge_portaria_bicsp(df_bicsp, ano):
         how="left",
     )
 
-    # list of dimensions and drop empty ones
-    list_dimensoes = [x for x in df["Dimensão"].unique().tolist() if pd.notna(x)]
-
-    # remove IDE
-    list_dimensoes = list_dimensoes[1:]
+    # dimensões (exclui vazias e a linha IDE); não depende da ordem do unique()
+    list_dimensoes = [
+        x for x in df["Dimensão"].unique().tolist() if pd.notna(x) and x != "IDE"
+    ]
 
     # calculate the score for each dimension based on the average wheighed score
     df["contributo"] = df["Ponderação"] * df["Score"] / 2

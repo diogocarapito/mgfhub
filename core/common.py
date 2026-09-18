@@ -21,7 +21,7 @@ def extrair_id(df, coluna):
 
     Linhas terminadas em "FX" são descartadas, exceto "2020.435.01 FX".
     """
-    df = df[~(df[coluna].str.endswith("FX") & (df[coluna] != "2020.435.01 FX"))]
+    df = df[~(df[coluna].str.endswith("FX") & (df[coluna] != "2020.435.01 FX"))].copy()
 
     df[coluna] = (
         df[coluna].str.extract(r"\.(\d+)\.", expand=False).fillna(0).astype(int)

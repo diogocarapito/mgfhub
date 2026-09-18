@@ -42,3 +42,12 @@ docker scout quickview mgfhub:latest
 docker scout cves mgfhub:latest
 docker scout recommendations mgfhub:latest
 ```
+
+DEPLOYMENT
+```bash
+cd mgfhub
+  git pull
+  cd deploy
+  docker compose -f compose.beta.yaml up -d --build
+  curl http://127.0.0.1:8000/healthz          # → {"status":"ok"}
+```

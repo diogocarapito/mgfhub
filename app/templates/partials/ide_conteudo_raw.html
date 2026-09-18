@@ -1,0 +1,52 @@
+{% for erro in erros %}
+<article class="erro-upload">⚠️ {{ erro }}</article>
+{% endfor %}
+
+{# estado da sessão: o que está carregado e a sua persistência #}
+{% if resumo.persistente %}
+<p class="datasets-guardados">💾 Dados guardados na unidade <strong>{{ resumo.unidade_nome }}</strong>
+    <small>(o gestor pode apagá-los em <a href="/conta">Conta</a>)</small> —
+    {% if resumo.bicsp %}BI-CSP: {% for nome in resumo.bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+    {% if resumo.mimuf %} MIM@UF: {% for nome in resumo.mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+</p>
+{% if resumo.sessao_bicsp or resumo.sessao_mimuf %}
+<p class="datasets-guardados">🕐 Só nesta sessão (outra unidade, não guardado):
+    {% for nome in resumo.sessao_bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}
+    {% for nome in resumo.sessao_mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}
+</p>
+{% endif %}
+{% elif utilizador %}
+<p class="datasets-guardados">⚠️ Sem unidade ativa — os dados desta sessão são temporários.
+    Ativa ou cria uma unidade em <a href="/conta">Conta</a> para os guardar.</p>
+{% elif resumo.bicsp or resumo.mimuf %}
+<p class="datasets-guardados">Os dados desta sessão são temporários e descartados por inatividade.
+    <a href="/entrar">Entra</a> para os guardar na tua unidade.
+    {% if resumo.bicsp %}· BI-CSP: {% for nome in resumo.bicsp %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+    {% if resumo.mimuf %}· MIM@UF: {% for nome in resumo.mimuf %}<span class="chip">{{ nome }}</span>{% endfor %}{% endif %}
+</p>
+{% endif %}
+
+{# análise (gráficos/filtros) desligada — mostra os dados em bruto tal como
+   saem do ETL; o código da análise fica intacto para religar depois #}
+{% if not tabelas %}
+<article class="aviso">Sem dados carregados — usa o upload na barra lateral (BI-CSP ou MIM@UF).</article>
+{% else %}
+{% for t in tabelas %}
+<section class="tabela-raw-bloco">
+    <h3>{{ t.nome }}
+        <small>{{ t.tipo }} · {{ t.num_linhas }} linhas · {{ t.colunas | length }} colunas</small></h3>
+    <div class="tabela-scroll">
+        <table>
+            <thead>
+                <tr>{% for c in t.colunas %}<th>{{ c }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for linha in t.linhas %}
+                <tr>{% for celula in linha %}<td>{{ celula }}</td>{% endfor %}</tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+{% endif %}

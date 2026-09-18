@@ -75,12 +75,10 @@ def build_sunburst_ide(df, ano, mes, unidade, size=800):
 
     fig.update_layout(
         title=f"{unidade} {mes}/{ano}",
-        title_font=dict(size=24, color="black"),
+        title_font=dict(size=24),
         width=size,
         height=size,
         showlegend=True,
-        legend_title_font=dict(color="black"),
-        legend_font=dict(color="black"),
     )
 
     return fig
@@ -101,11 +99,10 @@ def build_sunburst_profissional(df, ano, mes, unidade, size=800):
         how="left",
     )
 
-    # list of dimensions and drop empty ones
-    list_dimensoes = [x for x in df["Dimensão"].unique().tolist() if pd.notna(x)]
-
-    # remove IDE
-    list_dimensoes = list_dimensoes[1:]
+    # dimensões (exclui vazias e a linha IDE); não depende da ordem do unique()
+    list_dimensoes = [
+        x for x in df["Dimensão"].unique().tolist() if pd.notna(x) and x != "IDE"
+    ]
 
     # calculate the score for each dimension based on the average wheighed score
     df["contributo"] = df["Ponderação"] * df["Score"] / 2
@@ -260,13 +257,7 @@ def build_dumbbell(dict_dfs):
         # iterador de cor
         i += 1
 
-    traces = []
-    for trace in dict_figs.values():
-        traces.append(trace)
-
-    fig = go.Figure(
-        data=traces,
-    )
+    fig = go.Figure(data=list(dict_figs.values()))
 
     fig.update_layout(
         xaxis=dict(
@@ -274,7 +265,7 @@ def build_dumbbell(dict_dfs):
             tickvals=[0, 0.5, 1, 1.5, 2],
             ticklen=10,
             showgrid=True,
-            gridcolor="#D3D3D3",
+            gridcolor="rgba(128, 128, 128, 0.25)",
             gridwidth=1,
             tickfont=dict(size=20),
             side="bottom",
@@ -343,7 +334,7 @@ def build_evolucao_temporal(df, filtro_visualizacao):
                 y1=1,
                 xref="paper",
                 yref="paper",
-                line=dict(color="black", width=1.5),
+                line=dict(color="rgba(128, 128, 128, 0.35)", width=1),
             )
         ]
     )
@@ -360,6 +351,7 @@ def build_evolucao_temporal(df, filtro_visualizacao):
             yref="y",
             fillcolor=color,
             opacity=0.3,
+            layer="below",
             line_width=0,
         )
 
@@ -471,13 +463,14 @@ def build_barra_alvo(info_indicador):
         fig.add_shape(
             type="rect",
             x0=start,
-            x1=end,
+                x1=cccccccccccccccccccccccvvvvvvvvvvvbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbvb,ncv;
             y0=0,
             y1=1,
             xref="x",
             yref="paper",
-            fillcolor=color,
+        fillcolor=color,:
             opacity=0.3,
+            layer="below",
             line_width=0,
         )
 
@@ -488,8 +481,8 @@ def build_barra_alvo(info_indicador):
             x=[valor],
             y=[""],
             orientation="h",
-            width=0.6,
-            marker_color="rgb(46, 80, 140)",
+            width=0.8,
+            marker_color="#0aa6b8",
             text=[f"{valor}{sufixo}"],
             textposition="outside",
             cliponaxis=False,
@@ -498,7 +491,7 @@ def build_barra_alvo(info_indicador):
     )
 
     fig.update_layout(
-        height=150,
+        height=90,
         showlegend=False,
         xaxis=dict(
             range=[0, maximo],
@@ -576,6 +569,7 @@ def build_barras_equipa(df, ordenar_por, id_indicador):
             yref="paper",
             fillcolor=color,
             opacity=0.3,
+            layer="below",
             line_width=0,
         )
 
@@ -597,7 +591,7 @@ def build_barras_equipa(df, ordenar_por, id_indicador):
             x=valores,
             y=medicos,
             orientation="h",
-            marker_color="rgb(30, 75, 124)",
+            marker_color="#0aa6b8",
             text=[_label(v) for v in valores],
             textposition="outside",
             cliponaxis=False,

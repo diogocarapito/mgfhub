@@ -375,6 +375,26 @@ def _resumo_sessao(dados, utilizador=None, extras=None):
     }
 
 
+def _tabelas_raw(dados):
+    """Tabelas em bruto dos datasets carregados (uma por ficheiro), para
+    mostrar os dados tal como saem do ETL enquanto a análise (gráficos e
+    filtros) está desligada — o resto do código continua intacto."""
+    tabelas = []
+    for tipo in ("bicsp", "mimuf"):
+        for nome, entry in (dados.get(tipo) or {}).items():
+            df = entry["df"]
+            tabelas.append(
+                {
+                    "nome": nome,
+                    "tipo": tipo.upper(),
+                    "colunas": [str(c) for c in df.columns],
+                    "linhas": df.fillna("").astype(object).values.tolist(),
+                    "num_linhas": int(len(df)),
+                }
+            )
+    return tabelas
+
+
 # ------------------------------------------------------------------- rotas
 
 
@@ -385,7 +405,7 @@ def ide(request: Request):
         "utilizador": utilizador,
         "resumo": _resumo_sessao(dados, utilizador, extras),
         "erros": [],
-        **_ctx_unidade(dados, request.query_params),
+        "tabelas": _tabelas_raw(dados),
     }
     return templates.TemplateResponse(request=request, name="ide.html", context=context)
 
@@ -487,12 +507,11 @@ async def ide_upload(
         "utilizador": utilizador,
         "resumo": _resumo_sessao(dados, utilizador, extras),
         "erros": erros + avisos,
-        "oob_filtros": True,
-        **_ctx_unidade(dados, request.query_params),
+        "tabelas": _tabelas_raw(dados),
     }
     response = templates.TemplateResponse(
         request=request,
-        name="partials/ide_dashboard.html",
+        name="partials/ide_conteudo_raw.html",
         context=context,
     )
     if token:

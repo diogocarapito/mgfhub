@@ -102,7 +102,21 @@ body {
     --pico-form-element-focus-color: var(--acento-foco);
 }
 
-h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 0.85rem; }
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.85rem;
+    /* texto com gradiente: pinta-se o gradiente como fundo e recorta-se às
+       letras (color não aceita gradientes). inline-block encolhe a caixa à
+       largura do texto — senão só se veria a ponta esquerda do gradiente —
+       e mantém o alinhamento do contentor (centrado ou à esquerda). */
+    display: inline-block;
+    background: var(--marca-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
 h2 { font-size: 1.3rem; font-weight: 650; margin: 0 0 0.7rem; }
 h3 { font-size: 1.1rem; font-weight: 650; margin: 0 0 0.55rem; }
 h4 { font-size: 0.98rem; font-weight: 650; margin: 0 0 0.45rem; }
@@ -158,6 +172,10 @@ article > header {
 
 .marca {
     display: block;
+    /* encolhe à largura do texto para o gradiente (background-clip: text)
+       abranger exatamente o wordmark — senão, num bloco largo (sidebar),
+       o texto só apanha a parte esquerda/azul do gradiente */
+    width: fit-content;
     font-size: 1.35rem;
     font-weight: 800;
     letter-spacing: -0.02em;
@@ -443,7 +461,7 @@ article > header {
 .conteudo {
     margin-left: var(--nav-largura);
     /* padding-bottom deixa espaço para o rodapé fixo não tapar conteúdo */
-    padding: 3.25rem 2rem 4.5rem;
+    padding: 3.25rem 2rem 3.5rem;
 }
 
 /* rodapé permanente — fixo no fundo da área principal, sempre visível */
@@ -453,7 +471,7 @@ article > header {
     right: 0;
     bottom: 0;
     z-index: 40;
-    padding: 0.7rem 1rem;
+    padding: 0.3rem 0.3rem;
     text-align: center;
     font-size: 0.78rem;
     color: var(--suave);
@@ -640,6 +658,52 @@ article > header {
     overflow-x: auto;
 }
 
+/* -------------------------------------------- página IDE (tabela em bruto)
+   layout normal com scroll: conteúdo à largura toda, alinhado à esquerda
+   (escapa ao centrado global); filtros à direita */
+body.pagina-ide .conteudo-interior {
+    max-width: none;
+    width: 100%;
+    text-align: left;
+}
+
+.tabela-raw-bloco {
+    margin-bottom: 2.5rem;
+}
+
+.tabela-raw-bloco h3 small {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--suave);
+}
+
+.tabela-raw-bloco table {
+    border-collapse: collapse;
+    width: max-content;
+    font-size: 0.8rem;
+}
+
+.tabela-raw-bloco th {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    font-weight: 650;
+    color: var(--texto);
+}
+
+.tabela-raw-bloco th,
+.tabela-raw-bloco td {
+    padding: 0.35rem 0.7rem;
+    white-space: nowrap;
+    text-align: left;
+    border-bottom: 1px solid var(--borda);
+}
+
+.filtros-vazio {
+    color: var(--suave);
+    font-size: 0.85rem;
+}
+
 table {
     font-size: 0.85rem;
 }
@@ -805,12 +869,12 @@ tbody td {
     }
 }
 
-/* gráficos: cartão branco para o papel do plotly parecer intencional
-   também no modo escuro */
+/* gráficos: papel do plotly transparente — integra no cartão/página e no
+   tema (a cor e a fonte do texto vêm das variáveis CSS, via chart.html) */
 
 .grafico {
     min-height: 8rem;
-    background: #ffffff;
+    background: transparent;
     border: 1px solid var(--borda);
     border-radius: var(--pico-border-radius);
     padding: 0.4rem;

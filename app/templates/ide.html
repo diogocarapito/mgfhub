@@ -2,11 +2,8 @@
 
 {% block title %}IDE — mgfhub{% endblock %}
 
-{% block body_class %}modo-dashboard{% endblock %}
+{% block body_class %}pagina-ide{% endblock %}
 
-{% block head_extra %}
-<script src="/static/vendor/plotly.min.js?v={{ v_estatica }}" defer></script>
-{% endblock %}
 
 {# upload dos ficheiros do IDE — vive na secção do meio da barra lateral #}
 {% block nav_meio %}
@@ -45,25 +42,19 @@
 {% endblock %}
 
 {% block content %}
+
+<h1>IDE</h1>
+
 <div class="ide-layout">
     <div class="ide-principal">
         <div id="ide-dashboard">
-            {% include "partials/ide_dashboard.html" %}
+            {% include "partials/ide_conteudo_raw.html" %}
         </div>
     </div>
 
     <aside class="ide-aside">
-        <div id="ide-filtros">
-            {% include "partials/ide_filtros.html" %}
-        </div>
-
-        <details>
-            <summary><small>Dicas</small></summary>
-            <p><small><strong>1 —</strong> Podes carregar vários ficheiros com períodos diferentes
-                para comparar períodos e/ou unidades.</small></p>
-            <p><small><strong>2 —</strong> Sem sessão iniciada, os dados são processados em memória
-                e descartados por inatividade — nada fica guardado no servidor.</small></p>
-        </details>
+        <h4>Filtros</h4>
+        <p class="filtros-vazio">Em breve.</p>
     </aside>
 </div>
 {% endblock %}

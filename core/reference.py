@@ -5,24 +5,32 @@ código funcione independentemente do diretório de trabalho (streamlit,
 pytest, fastapi).
 """
 
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
+# Estes datasets de referência são estáticos: são lidos uma vez e reutilizados.
+# Os frames devolvidos são partilhados — tratá-los como só-leitura (os
+# consumidores fazem seleção de colunas/merge, nunca alteram no sítio).
 
+
+@lru_cache(maxsize=1)
 def load_portaria_sunburst() -> pd.DataFrame:
     """Estrutura da Portaria 411-A/2023: indicadores, dimensões,
     ponderações e intervalos, no formato usado pelo sunburst."""
     return pd.read_csv(DATA_DIR / "sunburst_portaria_411a_2023.csv")
 
 
+@lru_cache(maxsize=1)
 def load_indicadores() -> pd.DataFrame:
     """Dataset SDM completo dos indicadores (pesquisa, cartões, tabela)."""
     return pd.read_csv(DATA_DIR / "indicadores_sdm_complete.csv", index_col=0)
 
 
+@lru_cache(maxsize=None)
 def load_intervalos(ano) -> pd.DataFrame:
     """Intervalos aceitáveis/esperados dos indicadores IDE para um ano.
 

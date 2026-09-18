@@ -33,10 +33,10 @@ def test_pagina_ide_sem_dados():
     resp = client.get("/ide")
     assert resp.status_code == 200
     assert 'id="upload-bicsp"' in resp.text
-    assert "BI-CSP não carregados" in resp.text
-    # estado vazio mostra o sunburst de demonstração
-    assert "chart-demo" in resp.text
-    assert "plotly.min.js" in resp.text
+    # análise desligada: estado vazio da tabela em bruto, sem gráficos/plotly
+    assert "Sem dados carregados" in resp.text
+    assert "chart-demo" not in resp.text
+    assert "plotly.min.js" not in resp.text
 
 
 def test_tabs_sem_dados_mostram_aviso():
@@ -52,12 +52,11 @@ def test_upload_e_visao_unidade():
     # resumo da sessão com os dois tipos carregados
     assert "USF Fixture 06/2024" in resp.text
     assert "bicsp_sem_cabecalho_2024_07.xlsx 07/2024" in resp.text
-    # com 2 datasets BI-CSP a vista default é Dumbbell
-    assert "chart-dumbbell" in resp.text
-    # métrica IDE do golden (19.076 → 19.1)
-    assert "19.1" in resp.text
+    # análise desligada: o upload passa a mostrar as tabelas em bruto
+    assert "tabela-raw-bloco" in resp.text
+    assert "Designação Indicador (+ID)" in resp.text  # coluna crua do BI-CSP
 
-    # vista Sunburst
+    # a rota das tabs continua intacta (código da análise por religar)
     resp = client.get("/ide/unidade", params={"vista": "Sunburst"})
     assert "chart-sunburst" in resp.text
     assert '"sunburst"' in resp.text

@@ -182,9 +182,11 @@ def process_filter_temporal(df_mimuf, filtro_indicador):
     filtered_dfs = []
 
     for each in list_dfs:
+        # .copy() — senão o "filtered_df[...] = ..." mexeria numa fatia do
+        # dataframe guardado na sessão (SettingWithCopyWarning / corrupção)
         filtered_df = df_mimuf[each]["df"].loc[
             df_mimuf[each]["df"]["id"] == int(id_indicador_selected)
-        ]
+        ].copy()
         filtered_df["Mês"] = df_mimuf[each]["mes"]
         filtered_df["Ano"] = df_mimuf[each]["ano"]
 

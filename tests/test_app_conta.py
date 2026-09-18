@@ -120,7 +120,7 @@ def test_pedido_de_adesao_pendente_ate_aceitar():
     assert "Pedido enviado" in resp.text
     # enquanto pendente: sem acesso aos dados nem à unidade
     assert "pendente" in membro.get("/conta").text
-    assert "BI-CSP não carregados" in membro.get("/ide").text
+    assert "Sem dados carregados" in membro.get("/ide").text
     resp = membro.post("/conta/unidades/1/ativa")
     assert "Não és membro dessa unidade" in resp.text
 
@@ -213,7 +213,7 @@ def test_upload_persistente_entre_sessoes_e_membros():
     )
     resp = outra_sessao.get("/ide")
     assert "USF Fixture 06/2024" in resp.text
-    assert "chart-sunburst" in resp.text
+    assert "tabela-raw-bloco" in resp.text
 
     # outro membro da unidade vê os mesmos dados
     membro = _juntar_e_aceitar(gestora, "bruno@example.com")
@@ -229,7 +229,7 @@ def test_upload_de_outra_unidade_nao_persiste():
     resp = _upload_bicsp(gestora)
     assert "não ficou" in resp.text and "guardado" in resp.text
     assert "Só nesta sessão" in resp.text
-    assert "chart-" in resp.text  # a análise renderiza na mesma
+    assert "tabela-raw-bloco" in resp.text  # os dados em bruto renderizam na mesma
 
     # nada na tabela de dados da unidade
     assert "2024-06" not in gestora.get("/conta").text
@@ -239,7 +239,7 @@ def test_upload_de_outra_unidade_nao_persiste():
     outra_sessao.post(
         "/entrar", data={"email": "ana@example.com", "password": "segredo123"}
     )
-    assert "BI-CSP não carregados" in outra_sessao.get("/ide").text
+    assert "Sem dados carregados" in outra_sessao.get("/ide").text
 
 
 def test_gestor_ve_tabela_de_dados_e_apaga():
@@ -257,7 +257,7 @@ def test_gestor_ve_tabela_de_dados_e_apaga():
         data={"tipo": "bicsp", "nome": "USF Fixture 06/2024"},
     )
     assert "Dados apagados" in resp.text
-    assert "BI-CSP não carregados" in gestora.get("/ide").text
+    assert "Sem dados carregados" in gestora.get("/ide").text
 
 
 def test_membro_nao_apaga_dados():
@@ -316,7 +316,7 @@ def test_apagar_unidade_apaga_dados():
     with closing(db.ligar()) as con:
         n_uploads = con.execute("SELECT COUNT(*) c FROM uploads").fetchone()["c"]
     assert n_uploads == 0
-    assert "BI-CSP não carregados" in gestora.get("/ide").text
+    assert "Sem dados carregados" in gestora.get("/ide").text
 
 
 def test_apagar_conta():

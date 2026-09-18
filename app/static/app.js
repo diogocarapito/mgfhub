@@ -3,6 +3,30 @@
 //    o tema é aplicado cedo, no <head>, para evitar flash)
 //  - zonas de upload do IDE (clique/arrastar, lista, auto-análise)
 (function () {
+    // tema partilhado dos gráficos plotly: fundo transparente (herdam o
+    // cartão/página) e cor/fonte do texto vindas das variáveis CSS, para
+    // acompanharem o modo claro/escuro e a tipografia da app
+    function temaPlotly() {
+        var cs = getComputedStyle(document.documentElement);
+        return {
+            paper_bgcolor: "rgba(0,0,0,0)",
+            plot_bgcolor: "rgba(0,0,0,0)",
+            font: {
+                family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                color: cs.getPropertyValue("--texto").trim() || "#1c2b2e"
+            }
+        };
+    }
+    window.mgfhubPlotlyTheme = temaPlotly;
+
+    // re-aplica o tema aos gráficos já desenhados (ao alternar claro/escuro)
+    function reTemarGraficos() {
+        if (!window.Plotly) return;
+        document.querySelectorAll(".js-plotly-plot").forEach(function (el) {
+            window.Plotly.relayout(el, temaPlotly());
+        });
+    }
+
     function ligarTema() {
         var botao = document.getElementById("tema-toggle");
         if (!botao) return;
@@ -20,6 +44,7 @@
             document.documentElement.dataset.theme = novo;
             localStorage.setItem("mgfhub-tema", novo);
             atualizarEtiqueta();
+            reTemarGraficos();
         });
     }
 

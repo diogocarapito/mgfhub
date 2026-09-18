@@ -11,11 +11,27 @@
             dados.layout.autosize = true;
             delete dados.layout.width;
             delete dados.layout.height;
+            // integra no tema da app antes do 1.º render (sem flash):
+            // fundo transparente + cor/fonte do texto das variáveis CSS
+            if (window.mgfhubPlotlyTheme) {
+                var t = window.mgfhubPlotlyTheme();
+                dados.layout.paper_bgcolor = t.paper_bgcolor;
+                dados.layout.plot_bgcolor = t.plot_bgcolor;
+                dados.layout.font = Object.assign({}, dados.layout.font, t.font);
+            }
             Plotly.newPlot(el, dados.data, dados.layout, {responsive: true, displaylogo: false});
-            // ajusta ao tamanho real do contentor (o layout flex pode só
-            // estabilizar depois do render) e a cada mudança de tamanho
-            var ajustar = function () { if (el._fullLayout) Plotly.Plots.resize(el); };
-            requestAnimationFrame(ajustar);
+            // ajusta ao tamanho real do contentor, coalescido por frame
+            // (o ResizeObserver dispara em rajada durante o resize da janela)
+            var pendente = false;
+            var ajustar = function () {
+                if (pendente) return;
+                pendente = true;
+                requestAnimationFrame(function () {
+                    pendente = false;
+                    if (el._fullLayout) Plotly.Plots.resize(el);
+                });
+            };
+            ajustar();
             setTimeout(ajustar, 150);
             if (window.ResizeObserver && el.parentElement) {
                 new ResizeObserver(ajustar).observe(el.parentElement);
